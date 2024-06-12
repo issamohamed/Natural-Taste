@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+</head>
+<body>
+    <h1>Current Weather</h1>
+    <div id="weather"></div>
+    <div id="music-genre"></div>
+
+    <script>
+        const accuWeatherApiKey = 'CDgs6C7GgeqZvBUctXnM7rBYCs5G3Sp7';
+        const groqApiKey = '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';
+
+        async function getWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async position => {
+                    const { latitude, longitude } = position.coords;
+
+                    try {
+                        // Step 1: Get the location key
+                        const locationResponse = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`);
+                        if (!locationResponse.ok) throw new Error(`Location API error: ${locationResponse.status} ${locationResponse.statusText}`);
+                        const locationData = await locationResponse.json();
+                        if (!locationData.Key) throw new Error('Invalid location data');
+                        
+                        const locationKey = locationData.Key;
+                        const cityName = locationData.LocalizedName;
+                        const countryName = locationData.Country.LocalizedName;
+
+                        // Step 2: Get the current weather
+                        const weatherResponse = await fetch(`https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${accuWeatherApiKey}`);
+                        if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
+                        const weatherData = await weatherResponse.json();
+                        if (!weatherData[0]) throw new Error('Invalid weather data');
+
+                        const weather = weatherData[0];
+                        const weatherInfo = `
+                            <p>City: ${cityName}</p>
+                            <p>Country: ${countryName}</p>
+                            <p>Temperature: ${weather.Temperature.Metric.Value}°C</p>
+                            <p>Weather: ${weather.WeatherText}</p>
+                        `;
+                        document.getElementById('weather').innerHTML = weatherInfo;
+
+                        // Step 3: Get music genre recommendation
+                        const prompt = "Generate a detailed genre of music you believe best fits with this weather. Dont make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd reccomend in this format:'Your reccomended musical genre for the weather is: [insert genre] (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specfic and detailed genres.";
+                        const weather_document = `City: ${cityName}, Country: ${countryName}, Temperature: ${weather.Temperature.Metric.Value}°C, Weather: ${weather.WeatherText}`;
+                        const musicGenre = await groqLlamaGenerateSummary(prompt, weather_document);
+                        document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
+
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                        document.getElementById('weather').innerHTML = `Error: ${error.message}`;
+                    }
+                }, error => {
+                    console.error('Error getting location:', error);
+                    document.getElementById('weather').innerHTML = `Error getting location: ${error.message}`;
+                });
+            } else {
+                document.getElementById('weather').innerHTML = 'Geolocation is not supported by this browser.';
+            }
+        }
+
+        async function groqLlamaGenerateSummary(prompt, weather_document) {
+            if (typeof prompt !== 'string' || !prompt.trim()) {
+                console.error("Prompt must be a non-empty string.");
+                return "";
+            }
+            if (typeof weather_document !== 'string' || !weather_document.trim()) {
+                console.error("Document must be a non-empty string.");
+                return "";
+            }
+
+            prompt = formatTextData(prompt);
+            weather_document = formatTextData(weather_document);
+            const url = "https://api.groq.com/openai/v1/chat/completions";
+            const promptAndWeather_document = prompt + ' ' + weather_document;
+            
+            const postData = {
+                messages: [
+                    {
+                        role: 'user',
+                        content: promptAndWeather_document
+                    }
+                ],
+                model: 'llama3-70b-8192',
+                temperature: 1,
+                max_tokens: 1024,
+                top_p: 1,
+                stream: false,
+                stop: null
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${groqApiKey}`
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                if (!responseData || !responseData.choices || !responseData.choices[0] || !responseData.choices[0].message || !responseData.choices[0].message.content) {
+                    console.error("Invalid response structure.");
+                    return "";
+                }
+
+                const content = formatTextData(responseData.choices[0].message.content);
+                return content;
+            } catch (error) {
+                console.error("Error in fetch request: " + error.message);
+                return "";
+            }
+        }
+
+        function formatTextData(text) {
+            return text.trim();
+        }
+
+        // Load weather on page load
+        window.onload = getWeather;
+    </script>
+</body>
+</html>
