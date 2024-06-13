@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Current Weather</h1>
-    <div id="weather"></div>
-    <div id="music-genre"></div>
+    <div id="main-content">
+        <div id="weather"></div>
+        <div id="music-genre"></div>
+        <div id="recommended-tracks"></div>
+    </div>
+    <div id="sidebar-content">
+        <div id="location"></div>
+    </div>
+    <div id="artists"></div>
 
     <script>
         const accuWeatherApiKey = 'CDgs6C7GgeqZvBUctXnM7rBYCs5G3Sp7';
@@ -20,36 +27,30 @@
                     const { latitude, longitude } = position.coords;
 
                     try {
-                        // Step 1: Get the location key
-                        const locationResponse = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`);
-                        if (!locationResponse.ok) throw new Error(`Location API error: ${locationResponse.status} ${locationResponse.statusText}`);
-                        const locationData = await locationResponse.json();
-                        if (!locationData.Key) throw new Error('Invalid location data');
-                        
-                        const locationKey = locationData.Key;
-                        const cityName = locationData.LocalizedName;
-                        const countryName = locationData.Country.LocalizedName;
+                        const { locationKey, cityName, countryName } = await fetchLocationData(latitude, longitude);
+                        const weather = await fetchWeatherData(locationKey);
 
-                        // Step 2: Get the current weather
-                        const weatherResponse = await fetch(`https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${accuWeatherApiKey}`);
-                        if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
-                        const weatherData = await weatherResponse.json();
-                        if (!weatherData[0]) throw new Error('Invalid weather data');
-
-                        const weather = weatherData[0];
-                        const weatherInfo = `
+                        const locationInfo = `
                             <p>City: ${cityName}</p>
                             <p>Country: ${countryName}</p>
                             <p>Temperature: ${weather.Temperature.Metric.Value}°C</p>
+                        `;
+                        document.getElementById('location').innerHTML = locationInfo;
+
+                        const weatherInfo = `
                             <p>Weather: ${weather.WeatherText}</p>
                         `;
                         document.getElementById('weather').innerHTML = weatherInfo;
 
-                        // Step 3: Get music genre recommendation
-                        const prompt = "Generate a detailed genre of music you believe best fits with this weather. Dont make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd reccomend in this format:'Your reccomended musical genre for the weather is: [insert genre] (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specfic and detailed genres.";
-                        const weather_document = `City: ${cityName}, Country: ${countryName}, Temperature: ${weather.Temperature.Metric.Value}°C, Weather: ${weather.WeatherText}`;
-                        const musicGenre = await groqLlamaGenerateSummary(prompt, weather_document);
+                        const weatherDocument = `City: ${cityName}, Country: ${countryName}, Temperature: ${weather.Temperature.Metric.Value}°C, Weather: ${weather.WeatherText}`;
+                        const musicGenre = await generateMusicGenre(weatherDocument);
                         document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
+
+                        const recommendedTracks = await generateRecommendedTracks(musicGenre);
+                        document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks: ${recommendedTracks}</p>`;
+
+                        const artists = await generateArtists(musicGenre);
+                        document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><p>${artists}</p>`;
 
                     } catch (error) {
                         console.error('Error fetching data:', error);
@@ -64,26 +65,56 @@
             }
         }
 
-        async function groqLlamaGenerateSummary(prompt, weather_document) {
-            if (typeof prompt !== 'string' || !prompt.trim()) {
-                console.error("Prompt must be a non-empty string.");
-                return "";
-            }
-            if (typeof weather_document !== 'string' || !weather_document.trim()) {
-                console.error("Document must be a non-empty string.");
-                return "";
-            }
-
-            prompt = formatTextData(prompt);
-            weather_document = formatTextData(weather_document);
-            const url = "https://api.groq.com/openai/v1/chat/completions";
-            const promptAndWeather_document = prompt + ' ' + weather_document;
+        async function fetchLocationData(latitude, longitude) {
+            const locationResponse = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`);
+            if (!locationResponse.ok) throw new Error(`Location API error: ${locationResponse.status} ${locationResponse.statusText}`);
+            const locationData = await locationResponse.json();
+            if (!locationData.Key) throw new Error('Invalid location data');
             
+            return {
+                locationKey: locationData.Key,
+                cityName: locationData.LocalizedName,
+                countryName: locationData.Country.LocalizedName
+            };
+        }
+
+        async function fetchWeatherData(locationKey) {
+            const weatherResponse = await fetch(`https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${accuWeatherApiKey}`);
+            if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
+            const weatherData = await weatherResponse.json();
+            if (!weatherData[0]) throw new Error('Invalid weather data');
+
+            return weatherData[0];
+        }
+
+        async function generateMusicGenre(weatherDocument) {
+            const prompt = "Generate a detailed genre of music you believe best fits with this weather. Don't make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd recommend by inserting the genre name. (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specific and detailed genres.";
+            const response = await groqLlamaGenerateSummary(prompt, weatherDocument);
+            return response || "Could not generate music genre.";
+        }
+
+        async function generateRecommendedTracks(musicGenre) {
+            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}(Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (dont write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected)`;
+            const response = await groqLlamaGenerateSummary(prompt, "");
+            return response || "Could not generate recommended tracks.";
+        }
+
+        async function generateArtists(musicGenre) {
+            const prompt = `Generate a number list of 5 musical artists that best align with this genre: ${musicGenre}(Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (dont write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. for diversity purposes do not list any artists listed in the tracks generated)`;
+            const response = await groqLlamaGenerateSummary(prompt, "");
+            return response || "Could not generate artists.";
+        }
+
+        async function groqLlamaGenerateSummary(prompt, weatherDocument) {
+            prompt = formatTextData(prompt);
+            weatherDocument = formatTextData(weatherDocument);
+
+            const url = "https://api.groq.com/openai/v1/chat/completions";
             const postData = {
                 messages: [
                     {
                         role: 'user',
-                        content: promptAndWeather_document
+                        content: `${prompt} ${weatherDocument}`
                     }
                 ],
                 model: 'llama3-70b-8192',
@@ -114,8 +145,7 @@
                     return "";
                 }
 
-                const content = formatTextData(responseData.choices[0].message.content);
-                return content;
+                return formatTextData(responseData.choices[0].message.content);
             } catch (error) {
                 console.error("Error in fetch request: " + error.message);
                 return "";
