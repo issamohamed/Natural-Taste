@@ -5,18 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Natural Taste - Home</title>
     <link rel="stylesheet" href="home_style.css">
+    <!-- Add Typed.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 </head>
 <body>
     <div id="main-content">
         <h1>Natural Taste</h1>
-        <h2>a weather curator created by Issa Mohamed</h2>
+        <h2>A weather curator <span class="auto-type"></span></h2>
     </div>
     <div id="bottom-button">
         <a href="n_t.html" class="button">see what music the weather is in the mood for!</a>
     </div>
 
     <script>
-        // Optionally, you can add JavaScript here to handle any additional functionality related to the homepage.
+        // Initialize the typing animation
+        var typed = new Typed(".auto-type", {
+            strings: [" created by Issa Mohamed", " created for you"],
+            typeSpeed: 45,
+            backSpeed: 50,
+            startDelay: 500,
+            showCursor: false,
+            loop: false
+        });
     </script>
 </body>
 </html>
