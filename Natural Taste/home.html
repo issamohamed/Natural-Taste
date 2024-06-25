@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Natural Taste - Home</title>
     <link rel="stylesheet" href="home_style.css">
+    <!-- Add Font Awesome library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Add Typed.js library -->
     <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 </head>
 <body>
+    <div class="top-right">
+        <div class="socials">
+            <a href="https://github.com/issamohamed"><i class="fab fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/issa-mohamed-a2b4a4245/"><i class="fab fa-linkedin-in"></i></a>
+            <a href="https://twitter.com/issamohamed23"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=100038231138445"><i class="fab fa-facebook"></i></a>
+        </div>
+    </div>
     <div id="main-content">
-        <img src="natural_taste.png" alt="Natural Taste" class="logo">
-        <h1>Natural Taste</h1>
-        <h2>A weather curator <span class="auto-type"></span></h2>
+        <!-- Inserted image with the 'large' class to increase its size -->
+        <img src="natural_taste.png" alt="Natural Taste" class="logo large">
+        <h2>Natural Taste</h2>
+        <h3>A weather curator <span class="auto-type"></span></h3>
     </div>
     <div id="bottom-button">
         <a href="n_t.html" class="button">see what music your weather is in the mood for!</a>
@@ -27,6 +39,25 @@
             showCursor: false,
             loop: false
         });
+
+        // Background color rotation
+        const colors = ['#FDF0E1', '#0B3D91', '#0B6623']; // light beige, navy blue, navy green
+        let currentColorIndex = 0;
+
+        // Set initial button styles
+        const button = document.querySelector('.button');
+        button.style.color = '#FF7F50';
+        button.style.borderColor = '#FDF0E1';
+        button.style.backgroundColor = '#FDF0E1';
+
+        setInterval(() => {
+            const newColor = colors[currentColorIndex];
+            document.body.style.backgroundColor = newColor;
+            button.style.backgroundColor = newColor;
+            button.style.color = currentColorIndex === 0 ? '#FF7F50' : '#FDF0E1'; // Changes text color for better visibility
+            button.style.borderColor = newColor; // Changes border color
+            currentColorIndex = (currentColorIndex + 1) % colors.length;
+        }, 2000); // Change color every 2 seconds
     </script>
 </body>
 </html>
