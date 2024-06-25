@@ -1,2 +1,2 @@
 # Natural-Taste
-Web Application that provides musical recommendations based on user's local weather. 
+A web application that provides musical recommendations based on user's local weather. 
