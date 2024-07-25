@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natural Taste - Home</title>
+    <link rel="stylesheet" href="home_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+</head>
+<body>
+    <div class="top-right">
+        <div class="socials">
+            <a href="https://github.com/issamohamed"><i class="fab fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/issa-mohamed-a2b4a4245/"><i class="fab fa-linkedin-in"></i></a>
+            <a href="https://twitter.com/issamohamed23"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=100038231138445"><i class="fab fa-facebook"></i></a>
+        </div>
+    </div>
+    <div id="main-content">
+        <img src="natural_taste.png" alt="Natural Taste" class="logo large">
+        <h2>Natural Taste</h2>
+        <h3>A weather curator <span class="auto-type"></span></h3>
+    </div>
+    <div id="bottom-button">
+        <a href="n_t.html" class="button">See what music your weather is in the mood for!</a>
+    </div>
+
+    <script>
+        var typed = new Typed(".auto-type", {
+            strings: [" created by Issa Mohamed", " created for you"],
+            typeSpeed: 45,
+            backSpeed: 50,
+            startDelay: 500,
+            showCursor: false,
+            loop: false
+        });
+
+        const colors = ['#FDF0E1', '#0B3D91', '#0B6623'];
+        let currentColorIndex = 0;
+
+        const button = document.querySelector('.button');
+        button.style.color = '#FF7F50';
+        button.style.borderColor = '#FDF0E1';
+        button.style.backgroundColor = '#FDF0E1';
+
+        setInterval(() => {
+            const newColor = colors[currentColorIndex];
+            document.body.style.backgroundColor = newColor;
+            button.style.backgroundColor = newColor;
+            button.style.color = currentColorIndex === 0 ? '#FF7F50' : '#FDF0E1';
+            button.style.borderColor = newColor;
+            currentColorIndex = (currentColorIndex + 1) % colors.length;
+        }, 2000);
+    </script>
+</body>
+</html>
