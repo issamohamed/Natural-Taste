@@ -18,8 +18,8 @@
     <div id="artists"></div>
 
     <script>
-        const accuWeatherApiKey = 'Your Accuweather API Key';
-        const groqApiKey = 'Your Groq API Key';
+        const accuWeatherApiKey = 'CDgs6C7GgeqZvBUctXnM7rBYCs5G3Sp7';
+        const groqApiKey = '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';
 
         async function getWeather() {
             if (navigator.geolocation) {
@@ -30,39 +30,43 @@
                         const { locationKey, cityName, countryName } = await fetchLocationData(latitude, longitude);
                         const weather = await fetchWeatherData(locationKey);
 
-                        const locationInfo = `
-                            <p>City: ${cityName}</p>
-                            <p>Country: ${countryName}</p>
-                            <p>Temperature: ${weather.Temperature.Metric.Value}°C</p>
-                        `;
-                        document.getElementById('location').innerHTML = locationInfo;
-
-                        const weatherInfo = `
-                            <p>Weather: ${weather.WeatherText}</p>
-                        `;
-                        document.getElementById('weather').innerHTML = weatherInfo;
-
+                        displayLocation(cityName, countryName, weather);
+                        
                         const weatherDocument = `City: ${cityName}, Country: ${countryName}, Temperature: ${weather.Temperature.Metric.Value}°C, Weather: ${weather.WeatherText}`;
                         const musicGenre = await generateMusicGenre(weatherDocument);
                         document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
 
                         const recommendedTracks = await generateRecommendedTracks(musicGenre);
-                        document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks: ${recommendedTracks}</p>`;
+                        document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks:</p><ol>${recommendedTracks}</ol>`;
 
                         const artists = await generateArtists(musicGenre);
-                        document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><p>${artists}</p>`;
+                        document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><ol>${artists}</ol>`;
 
                     } catch (error) {
-                        console.error('Error fetching data:', error);
-                        document.getElementById('weather').innerHTML = `Error: ${error.message}`;
+                        displayError('weather', `Error fetching data: ${error.message}`);
                     }
                 }, error => {
-                    console.error('Error getting location:', error);
-                    document.getElementById('weather').innerHTML = `Error getting location: ${error.message}`;
+                    displayError('weather', `Error getting location: ${error.message}`);
                 });
             } else {
-                document.getElementById('weather').innerHTML = 'Geolocation is not supported by this browser.';
+                displayError('weather', 'Geolocation is not supported by this browser.');
             }
+        }
+
+        function displayLocation(cityName, countryName, weather) {
+            const locationInfo = `
+                <p>City: ${cityName}</p>
+                <p>Country: ${countryName}</p>
+                <p>Temperature: ${weather.Temperature.Metric.Value}°C</p>
+            `;
+            document.getElementById('location').innerHTML = locationInfo;
+
+            const weatherInfo = `<p>Weather: ${weather.WeatherText}</p>`;
+            document.getElementById('weather').innerHTML = weatherInfo;
+        }
+
+        function displayError(elementId, message) {
+            document.getElementById(elementId).innerHTML = `<p class="error">${message}</p>`;
         }
 
         async function fetchLocationData(latitude, longitude) {
@@ -89,32 +93,29 @@
 
         async function generateMusicGenre(weatherDocument) {
             const prompt = "Generate a detailed genre of music you believe best fits with this weather. Don't make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd recommend by inserting the genre name. (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specific and detailed genres.";
-            const response = await groqLlamaGenerateSummary(prompt, weatherDocument);
-            return response || "Could not generate music genre.";
+            return await groqLlamaGenerateSummary(prompt, weatherDocument);
         }
 
         async function generateRecommendedTracks(musicGenre) {
-            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}(Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (dont write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected)`;
-            const response = await groqLlamaGenerateSummary(prompt, "");
-            return response || "Could not generate recommended tracks.";
+            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected).`;
+            return await groqLlamaGenerateSummary(prompt, "");
         }
 
         async function generateArtists(musicGenre) {
-            const prompt = `Generate a number list of 5 musical artists that best align with this genre: ${musicGenre}(Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (dont write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. for diversity purposes do not list any artists listed in the tracks generated)`;
-            const response = await groqLlamaGenerateSummary(prompt, "");
-            return response || "Could not generate artists.";
+            const prompt = `Generate a number list of 5 musical artists that best align with this genre: ${musicGenre}. Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (don't write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. For diversity purposes do not list any artists listed in the tracks generated).`;
+            return await groqLlamaGenerateSummary(prompt, "");
         }
 
         async function groqLlamaGenerateSummary(prompt, weatherDocument) {
-            prompt = formatTextData(prompt);
-            weatherDocument = formatTextData(weatherDocument);
+            const formattedPrompt = formatTextData(prompt);
+            const formattedWeatherDocument = formatTextData(weatherDocument);
 
             const url = "https://api.groq.com/openai/v1/chat/completions";
             const postData = {
                 messages: [
                     {
                         role: 'user',
-                        content: `${prompt} ${weatherDocument}`
+                        content: `${formattedPrompt} ${formattedWeatherDocument}`
                     }
                 ],
                 model: 'llama3-70b-8192',
@@ -135,28 +136,24 @@
                     body: JSON.stringify(postData)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const responseData = await response.json();
                 if (!responseData || !responseData.choices || !responseData.choices[0] || !responseData.choices[0].message || !responseData.choices[0].message.content) {
-                    console.error("Invalid response structure.");
-                    return "";
+                    throw new Error("Invalid response structure");
                 }
 
                 return formatTextData(responseData.choices[0].message.content);
             } catch (error) {
                 console.error("Error in fetch request: " + error.message);
-                return "";
+                return "Could not generate the summary.";
             }
         }
 
         function formatTextData(text) {
-            return text.trim();
+            return text.trim().replace(/^\s+|\s+$/g, '');
         }
 
-        // Load weather on page load
         window.onload = getWeather;
     </script>
 </body>
