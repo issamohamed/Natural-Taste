@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Natural Taste - Home</title>
     <link rel="stylesheet" href="home_style.css">
-    <!-- Add Font Awesome library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- Add Typed.js library -->
     <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 </head>
 <body>
@@ -20,17 +18,15 @@
         </div>
     </div>
     <div id="main-content">
-        <!-- Inserted image with the 'large' class to increase its size -->
         <img src="natural_taste.png" alt="Natural Taste" class="logo large">
         <h2>Natural Taste</h2>
         <h3>A weather curator <span class="auto-type"></span></h3>
     </div>
     <div id="bottom-button">
-        <a href="n_t.html" class="button">see what music your weather is in the mood for!</a>
+        <a href="n_t.html" class="button">See what music your weather is in the mood for!</a>
     </div>
 
     <script>
-        // Initialize the typing animation
         var typed = new Typed(".auto-type", {
             strings: [" created by Issa Mohamed", " created for you"],
             typeSpeed: 45,
@@ -40,11 +36,9 @@
             loop: false
         });
 
-        // Background color rotation
-        const colors = ['#FDF0E1', '#0B3D91', '#0B6623']; // light beige, navy blue, navy green
+        const colors = ['#FDF0E1', '#0B3D91', '#0B6623'];
         let currentColorIndex = 0;
 
-        // Set initial button styles
         const button = document.querySelector('.button');
         button.style.color = '#FF7F50';
         button.style.borderColor = '#FDF0E1';
@@ -54,10 +48,10 @@
             const newColor = colors[currentColorIndex];
             document.body.style.backgroundColor = newColor;
             button.style.backgroundColor = newColor;
-            button.style.color = currentColorIndex === 0 ? '#FF7F50' : '#FDF0E1'; // Changes text color for better visibility
-            button.style.borderColor = newColor; // Changes border color
+            button.style.color = currentColorIndex === 0 ? '#FF7F50' : '#FDF0E1';
+            button.style.borderColor = newColor;
             currentColorIndex = (currentColorIndex + 1) % colors.length;
-        }, 2000); // Change color every 2 seconds
+        }, 2000);
     </script>
 </body>
 </html>
