@@ -7,19 +7,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="main-content">
-        <div id="weather"></div>
-        <div id="music-genre"></div>
-        <div id="recommended-tracks"></div>
-    </div>
-    <div id="sidebar-content">
-        <div id="location"></div>
-    </div>
-    <div id="artists"></div>
+    <body>
+        
+        <div id="content-wrapper">
+            <div id="main-content">
+                <div id="weather">
+                </div>
+                
+    
+                <div id="music-genre">
+                </div>
+    
+                <div id="recommended-tracks">
+                </div>
+            </div>
+    
+            <div id="sidebar-content">
+                <div id="location">
+                </div>
+                <a href="forecast.html" class="forecast-button">Forecast</a>
+            </div>
+        </div>
+    
+        <div id="artists">
+        </div>
+    </body>
 
     <script>
-        const accuWeatherApiKey = 'your api key';
-        const groqApiKey = 'your api key';
+        const accuWeatherApiKey = 'CDgs6C7GgeqZvBUctXnM7rBYCs5G3Sp7';
+        const groqApiKey = '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';
 
         async function getWeather() {
             if (navigator.geolocation) {
@@ -97,7 +113,7 @@
         }
 
         async function generateRecommendedTracks(musicGenre) {
-            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected).`;
+            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected). Once the song title is displayed in "" say "by (artist's name insert).`;
             return await groqLlamaGenerateSummary(prompt, "");
         }
 
