@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-Day Weather Forecast</title>
+    <link rel="stylesheet" href="forecasting.css">
+</head>
+<body>
+    <div id="main-content">
+        <div id="weather">
+            <!-- Weather content will be dynamically inserted here -->
+        </div>
+        <div id="music-genre">
+            <!-- Music genre content will be dynamically inserted here -->
+        </div>
+        <div id="recommended-tracks">
+            <!-- Recommended tracks content will be dynamically inserted here -->
+        </div>
+    </div>
+    <div id="sidebar-content">
+        <div id="location">
+            <!-- Location content will be dynamically inserted here -->
+        </div>
+        <div id="artists">
+            <!-- Artists content will be dynamically inserted here -->
+        </div>
+    </div>
+    </body>
+
+    <script>
+        const accuWeatherApiKey = 'CDgs6C7GgeqZvBUctXnM7rBYCs5G3Sp7';
+        const groqApiKey = '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';
+
+        async function getWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async position => {
+                    const { latitude, longitude } = position.coords;
+
+                    try {
+                        const { locationKey, cityName, countryName } = await fetchLocationData(latitude, longitude);
+                        const weather = await fetchWeatherData(locationKey);
+
+                        displayLocation(cityName, countryName);
+
+                        for (const dailyForecast of weather.DailyForecasts) {
+                            const weatherInfo = `
+                                <p>${new Date(dailyForecast.Date).toDateString()}</p>
+                                <p>${dailyForecast.Day.IconPhrase}</p>
+                            `;
+                            document.getElementById('weather').innerHTML += weatherInfo;
+
+                            const weatherDocument = `Min Temp: ${dailyForecast.Temperature.Minimum.Value}, Max Temp: ${dailyForecast.Temperature.Maximum.Value}, Weather: ${dailyForecast.Day.IconPhrase}`;
+                            const musicGenre = await generateMusicGenre(weatherDocument);
+                            document.getElementById('music-genre').innerHTML += `<p>Music Genre for ${new Date(dailyForecast.Date).toDateString()}: ${musicGenre}</p>`;
+
+                            const recommendedTracks = await generateRecommendedTracks(musicGenre);
+                            document.getElementById('recommended-tracks').innerHTML += `<p>Recommended Tracks for ${new Date(dailyForecast.Date).toDateString()}:</p><ol>${recommendedTracks}</ol>`;
+
+                            const artists = await generateArtists(musicGenre);
+                            document.getElementById('artists').innerHTML += `<p>Recommended Artists for ${new Date(dailyForecast.Date).toDateString()}:</p><ol>${artists}</ol>`;
+                        }
+
+                    } catch (error) {
+                        displayError('weather', `Error fetching data: ${error.message}`);
+                    }
+                }, error => {
+                    displayError('weather', `Error getting location: ${error.message}`);
+                });
+            } else {
+                displayError('weather', 'Geolocation is not supported by this browser.');
+            }
+        }
+
+        function displayLocation(cityName, countryName) {
+            const locationInfo = `
+                <p>City: ${cityName}</p>
+                <p>Country: ${countryName}</p>
+            `;
+            document.getElementById('location').innerHTML = locationInfo;
+        }
+
+        function displayError(elementId, message) {
+            document.getElementById(elementId).innerHTML = `<p class="error">${message}</p>`;
+        }
+
+        async function fetchLocationData(latitude, longitude) {
+            const locationResponse = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`);
+            if (!locationResponse.ok) throw new Error(`Location API error: ${locationResponse.status} ${locationResponse.statusText}`);
+            const locationData = await locationResponse.json();
+            if (!locationData.Key) throw new Error('Invalid location data');
+            
+            return {
+                locationKey: locationData.Key,
+                cityName: locationData.LocalizedName,
+                countryName: locationData.Country.LocalizedName
+            };
+        }
+
+        async function fetchWeatherData(locationKey) {
+            const weatherResponse = await fetch(`https://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${accuWeatherApiKey}`);
+            if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
+            const weatherData = await weatherResponse.json();
+            return weatherData;
+        }
+
+        async function generateMusicGenre(weatherDocument) {
+            const prompt = "Generate a detailed genre of music that best fits this weather. Make sure to only state the Music Genre in your response, nothing else.";
+            return await groqLlamaGenerateSummary(prompt, weatherDocument);
+        }
+
+        async function generateRecommendedTracks(musicGenre) {
+            const prompt = `Generate 1 song that best align with the genre: ${musicGenre}. Merely state the song's title. There can be nothing else written but the song's title and then state "by" and insert the artist's name.`;
+            return await groqLlamaGenerateSummary(prompt, "");
+        }
+
+        async function generateArtists(musicGenre) {
+            const prompt = `Generate 1 musical artist that closely aligns with the genre: ${musicGenre}. Merely state the artist's name.`;
+            return await groqLlamaGenerateSummary(prompt, "");
+        }
+
+        async function groqLlamaGenerateSummary(prompt, weatherDocument) {
+            const url = "https://api.groq.com/openai/v1/chat/completions";
+            const postData = {
+                messages: [
+                    {
+                        role: 'user',
+                        content: `${prompt} ${weatherDocument}`
+                    }
+                ],
+                model: 'llama3-70b-8192',
+                temperature: 1,
+                max_tokens: 1024
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${groqApiKey}`
+                },
+                body: JSON.stringify(postData)
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const responseData = await response.json();
+            return responseData.choices[0].message.content.trim();
+        }
+
+        window.onload = getWeather;
+    </script>
+</body>
+</html>
