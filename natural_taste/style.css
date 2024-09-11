@@ -5,8 +5,8 @@ body {
     justify-content: space-between;
     min-height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: #FDF0E1;
-    color: #FF7F50;
+    background-color: #ECDFCC; 
+    color: #1E201E; 
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
@@ -39,7 +39,7 @@ body {
 
 /* Styling for weather info */
 #weather {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: #AAB396; 
     border-radius: 10px;
     padding: 20px;
     display: flex;
@@ -50,13 +50,14 @@ body {
 #weather p {
     font-size: 2em;
     margin: 10px 0;
+    color: #1E201E; 
 }
 
 /* Styling for forecast button */
-.forecast-button {
+.forecast-button, .historical-button {
     display: inline-block;
-    background-color: #FF7F50;
-    color: #FDF0E1;
+    background-color: #AAB396; 
+    color: #1E201E; 
     padding: 20px 50px;
     border-radius: 15px;
     text-decoration: none;
@@ -65,14 +66,31 @@ body {
     transition: background-color 0.3s ease;
     align-self: flex-start;
 }
+.back-button {
+    display: inline-block;
+    background-color: #AAB396; 
+    color: #1E201E; 
+    padding: 10px 20px; 
+    border-radius: 15px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1.5em;
+    margin-top: 10px;
+    position: fixed; 
+    right: 20px; 
+    bottom: 20px; 
+    transition: background-color 0.3s ease;
+    width: auto; 
 
-.forecast-button:hover {
-    background-color: #FF6347;
+}
+
+.forecast-button:hover, .historical-button:hover, .back-button:hover {
+    background-color: #99A583;
 }
 
 /* Styling for music genre info */
 #music-genre {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: #AAB396;
     border-radius: 10px;
     padding: 20px;
 }
@@ -80,26 +98,33 @@ body {
 #music-genre p {
     font-size: 1.5em;
     margin: 10px 0;
+    color: #1E201E; 
 }
 
 /* Styling for recommended tracks */
 #recommended-tracks {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: #AAB396; 
     border-radius: 10px;
     padding: 20px;
 }
 
-#recommended-tracks p, 
+#recommended-tracks p {
+    font-size: 1.7em;
+    margin: 10px 0;
+    color: #1E201E; 
+}
+
 #recommended-tracks ol {
     font-size: 1.7em;
     margin: 10px 0;
     list-style-position: inside;
     padding-left: 0;
+    color: #1E201E; 
 }
 
 /* Styling for the location information */
 #location {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: #AAB396; 
     border-radius: 10px;
     padding: 20px;
 }
@@ -107,22 +132,16 @@ body {
 #location p {
     font-size: 1.5em;
     margin: 5px 0;
+    color: #1E201E; 
 }
 
 /* Styling for recommended artists */
 #artists {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: #AAB396; 
+    font-size: 1.7em;
     border-radius: 10px;
     padding: 20px;
     margin-top: 20px;
-}
-
-#artists p, 
-#artists ol {
-    font-size: 1.7em;
-    margin: 10px 0;
-    list-style-position: inside;
-    padding-left: 0;
 }
 
 /* Responsive design */
