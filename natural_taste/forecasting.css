@@ -5,8 +5,8 @@ body {
     align-items: flex-start;
     height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: #FDF0E1;
-    color: #FF7F50;
+    background-color: #F0F0F0; 
+    color: #213555; 
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
@@ -33,7 +33,7 @@ body {
 
 /* Styling for weather info */
 #weather {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: rgba(61, 90, 128, 0.2); 
     border-radius: 10px;
     padding: 20px;
     display: flex;
@@ -46,7 +46,7 @@ body {
     flex-direction: column;
     align-items: center;
     padding: 10px;
-    border-right: 2px solid rgba(255, 127, 80, 0.5);
+    border-right: 2px solid rgba(61, 90, 128, 0.5); 
     text-align: center;
 }
 
@@ -61,7 +61,7 @@ body {
 
 /* Styling for music genre info */
 #music-genre {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: rgba(61, 90, 128, 0.2); /* Second color with opacity: box containers */
     border-radius: 10px;
     padding: 20px;
 }
@@ -73,7 +73,7 @@ body {
 
 /* Styling for recommended tracks */
 #recommended-tracks {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: rgba(61, 90, 128, 0.2); /* Second color with opacity: box containers */
     border-radius: 10px;
     padding: 20px;
 }
@@ -88,7 +88,7 @@ body {
 
 /* Styling for the location information */
 #location {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: rgba(61, 90, 128, 0.2); 
     border-radius: 10px;
     padding: 20px;
 }
@@ -100,7 +100,7 @@ body {
 
 /* Styling for recommended artists */
 #artists {
-    background-color: rgba(255, 127, 80, 0.1);
+    background-color: rgba(61, 90, 128, 0.2); 
     border-radius: 10px;
     padding: 20px;
 }
@@ -113,6 +113,18 @@ body {
     padding-left: 0;
 }
 
+.back-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #3d5a80;
+    color: #E1EEf2;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
@@ -129,7 +141,7 @@ body {
 
     .weather-day {
         border-right: none;
-        border-bottom: 2px solid rgba(255, 127, 80, 0.5);
+        border-bottom: 2px solid rgba(61, 90, 128, 0.5); 
         padding: 15px 0;
     }
 
