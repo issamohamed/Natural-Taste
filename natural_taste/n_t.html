@@ -7,35 +7,37 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <body>
-        
-        <div id="content-wrapper">
-            <div id="main-content">
-                <div id="weather">
-                </div>
-                
-    
-                <div id="music-genre">
-                </div>
-    
-                <div id="recommended-tracks">
-                </div>
+    <div id="content-wrapper">
+        <div id="main-content">
+            <div id="weather">
+                <p>Loading weather data...</p>
             </div>
-    
-            <div id="sidebar-content">
-                <div id="location">
-                </div>
-                <a href="forecast.html" class="forecast-button">Forecast</a>
-            </div>
-        </div>
-    
-        <div id="artists">
-        </div>
-    </body>
 
+            <div id="music-genre">
+                <p>Loading music genre...</p>
+            </div>
+
+            <div id="recommended-tracks">
+                <p>Loading recommended tracks...</p> 
+            </div>
+        </div>
+
+        <div id="sidebar-content">
+            <div id="location">
+                <p>Loading location...</p> 
+            </div>
+            <a href="forecast.html" class="forecast-button">Forecast</a>
+            <a href="historical.html" class="historical-button">Yesterday's Forecast</a>
+        </div>
+    </div>
+
+    <div id="artists">
+        <p>Loading recommended artists...</p> 
+    </div>
+    <a href="index.html" class="back-button">Back</a>
     <script>
-        const accuWeatherApiKey = 'your key';
-        const groqApiKey = 'your key';
+        const accuWeatherApiKey = 'insert your own key';
+        const groqApiKey = 'insert your own key';
 
         async function getWeather() {
             if (navigator.geolocation) {
@@ -60,12 +62,21 @@
 
                     } catch (error) {
                         displayError('weather', `Error fetching data: ${error.message}`);
+                        setTimeout(() => {
+                            window.location.href = 'index.html'; // Redirect to index.html after 3 seconds
+                        }, 3000);
                     }
                 }, error => {
                     displayError('weather', `Error getting location: ${error.message}`);
+                    setTimeout(() => {
+                        window.location.href = 'index.html'; // Redirect to index.html after 3 seconds
+                    }, 3000);
                 });
             } else {
                 displayError('weather', 'Geolocation is not supported by this browser.');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Redirect to index.html after 3 seconds
+                }, 3000);
             }
         }
 
