@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="home_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <style>
+        body {
+            background-image: url('nt_backdrop.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
 </head>
 <body>
     <div class="top-right">
@@ -23,7 +31,7 @@
         <h3>A weather curator <span class="auto-type"></span></h3>
     </div>
     <div id="bottom-button">
-        <a href="n_t.html" class="button">See what music your weather is in the mood for!</a>
+        <a href="n_t.html" class="button">Let the weather pick your playlist!</a>
     </div>
 
     <script>
@@ -35,23 +43,6 @@
             showCursor: false,
             loop: false
         });
-
-        const colors = ['#FDF0E1', '#0B3D91', '#0B6623'];
-        let currentColorIndex = 0;
-
-        const button = document.querySelector('.button');
-        button.style.color = '#FF7F50';
-        button.style.borderColor = '#FDF0E1';
-        button.style.backgroundColor = '#FDF0E1';
-
-        setInterval(() => {
-            const newColor = colors[currentColorIndex];
-            document.body.style.backgroundColor = newColor;
-            button.style.backgroundColor = newColor;
-            button.style.color = currentColorIndex === 0 ? '#FF7F50' : '#FDF0E1';
-            button.style.borderColor = newColor;
-            currentColorIndex = (currentColorIndex + 1) % colors.length;
-        }, 2000);
     </script>
 </body>
 </html>
