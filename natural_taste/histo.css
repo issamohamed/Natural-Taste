@@ -1,0 +1,141 @@
+/* General body styling */
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #16423C; /* First color for the background */
+    color: #E9EFEC; /* Third color for the text */
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+#content-wrapper {
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+/* Left side (weather and genres) */
+#main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    flex: 3;
+    padding-right: 20px;
+}
+
+/* Right side (location) */
+#sidebar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+    padding-left: 20px;
+}
+
+/* Styling for weather info */
+#weather {
+    background-color: #6A9C89; /* Second color for containers */
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#weather p {
+    font-size: 2em;
+    margin: 10px 0;
+}
+
+/* Back button styling */
+.back-button {
+    background-color: #6A9C89; /* Second color for the button */
+    color: #E9EFEC; /* Third color for the text */
+    padding: 15px 30px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 1.5em;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+    align-self: flex-start;
+}
+
+.back-button:hover {
+    background-color: #588978; /* Slightly darker shade on hover */
+}
+
+/* Styling for music genre info */
+#music-genre {
+    background-color: #6A9C89;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#music-genre p {
+    font-size: 1.5em;
+    margin: 10px 0;
+}
+
+/* Styling for recommended tracks */
+#recommended-tracks {
+    background-color: #6A9C89;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#recommended-tracks p {
+    font-size: 1.7em;
+    margin: 10px 0;
+}
+
+#recommended-tracks ol {
+    font-size: 1.7em;
+    margin: 10px 0;
+    list-style-position: inside;
+    padding-left: 0;
+}
+
+/* Styling for the location information */
+#location {
+    background-color: #6A9C89;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#location p {
+    font-size: 1.5em;
+    margin: 5px 0;
+}
+
+/* Styling for recommended artists */
+#artists {
+    background-color: #6A9C89;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+#artists p, 
+#artists ol {
+    font-size: 1.7em;
+    margin: 10px 0;
+    list-style-position: inside;
+    padding-left: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #content-wrapper {
+        flex-direction: column;
+    }
+
+    #main-content, #sidebar-content {
+        width: 100%;
+        padding: 0;
+    }
+}
