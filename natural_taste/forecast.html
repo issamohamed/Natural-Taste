@@ -9,28 +9,28 @@
 <body>
     <div id="main-content">
         <div id="weather">
-            <!-- Weather content will be dynamically inserted here -->
+            <p>Loading weather data...</p>
         </div>
         <div id="music-genre">
-            <!-- Music genre content will be dynamically inserted here -->
+            <p>Loading music genre...</p>
         </div>
         <div id="recommended-tracks">
-            <!-- Recommended tracks content will be dynamically inserted here -->
+            <p>Loading recommended tracks...</p> 
         </div>
     </div>
     <div id="sidebar-content">
         <div id="location">
-            <!-- Location content will be dynamically inserted here -->
+            <p>Loading location...</p> 
         </div>
         <div id="artists">
-            <!-- Artists content will be dynamically inserted here -->
+            <p>Loading recommended artists...</p>
         </div>
+        <a href="n_t.html" class="back-button">Back</a>
     </div>
-    </body>
 
     <script>
-        const accuWeatherApiKey = 'your key';
-        const groqApiKey = 'your key';
+        const accuWeatherApiKey = 'insert your own key';
+        const groqApiKey = 'insert your own key';
 
         async function getWeather() {
             if (navigator.geolocation) {
@@ -40,6 +40,9 @@
                     try {
                         const { locationKey, cityName, countryName } = await fetchLocationData(latitude, longitude);
                         const weather = await fetchWeatherData(locationKey);
+
+                        // Clear the loading text
+                        clearLoadingText();
 
                         displayLocation(cityName, countryName);
 
@@ -70,6 +73,15 @@
             } else {
                 displayError('weather', 'Geolocation is not supported by this browser.');
             }
+        }
+
+        function clearLoadingText() {
+            // Clear loading placeholders
+            document.getElementById('weather').innerHTML = "";
+            document.getElementById('music-genre').innerHTML = "";
+            document.getElementById('recommended-tracks').innerHTML = "";
+            document.getElementById('location').innerHTML = "";
+            document.getElementById('artists').innerHTML = "";
         }
 
         function displayLocation(cityName, countryName) {
