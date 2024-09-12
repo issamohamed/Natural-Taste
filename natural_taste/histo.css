@@ -5,7 +5,7 @@ body {
     justify-content: space-between;
     min-height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: #E9EFEC;
+    background-color: #E9EFEC; 
     color: #16423C; 
     margin: 0;
     padding: 20px;
@@ -55,8 +55,8 @@ body {
 
 /* Back button styling */
 .back-button {
-    background-color: #C4DAD2;
-    color: #16423C; 
+    background-color: #16423C; 
+    color: #C4DAD2; 
     padding: 15px 30px;
     border-radius: 10px;
     text-decoration: none;
@@ -67,7 +67,7 @@ body {
 }
 
 .back-button:hover {
-    background-color: #B2C6B8; 
+    background-color: #B2C6B8; /* Slightly darker shade on hover */
 }
 
 /* Styling for music genre info */
