@@ -28,40 +28,46 @@ body {
     flex-direction: column;
     gap: 20px;
     flex: 1;
-    padding-left: 20px;
+    
 }
 
 /* Styling for weather info */
 #weather {
-    background-color: rgba(61, 90, 128, 0.2); 
-    border-radius: 10px;
-    padding: 20px;
     display: flex;
-    justify-content: space-between;
+    overflow-x: auto; /* Enable horizontal scroll */
+    padding: 10px 0; /* Vertical padding */
 }
 
 .weather-day {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    border-right: 2px solid rgba(61, 90, 128, 0.5); 
-    text-align: center;
+    background-color: #fff; 
+    border: 1px solid #ddd; 
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    min-width: 200px; 
+    flex: 0 0 auto; 
+    text-align: center; 
 }
 
-.weather-day:last-child {
-    border-right: none;
+.weather-day-date {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.weather-day-description {
+    font-size: 1.2em;
+    margin-bottom: 10px;
 }
 
 .weather-day p {
-    font-size: 0.9em;
+    font-size: 1em;
     margin: 5px 0;
 }
 
 /* Styling for music genre info */
 #music-genre {
-    background-color: rgba(61, 90, 128, 0.2); /* Second color with opacity: box containers */
+    background-color: rgba(61, 90, 128, 0.2); 
     border-radius: 10px;
     padding: 20px;
 }
@@ -73,7 +79,7 @@ body {
 
 /* Styling for recommended tracks */
 #recommended-tracks {
-    background-color: rgba(61, 90, 128, 0.2); /* Second color with opacity: box containers */
+    background-color: rgba(61, 90, 128, 0.2); 
     border-radius: 10px;
     padding: 20px;
 }
@@ -89,7 +95,6 @@ body {
 /* Styling for the location information */
 #location {
     background-color: rgba(61, 90, 128, 0.2); 
-    border-radius: 10px;
     padding: 20px;
 }
 
@@ -137,12 +142,14 @@ body {
 
     #weather {
         flex-direction: column;
+        overflow-x: visible; /* Disable horizontal scroll on small screens */
     }
 
     .weather-day {
         border-right: none;
         border-bottom: 2px solid rgba(61, 90, 128, 0.5); 
         padding: 15px 0;
+        min-width: auto; /* Allow the box to resize */
     }
 
     .weather-day:last-child {
