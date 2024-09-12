@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historical Weather App</title>
     <link rel="stylesheet" href="histo.css">
+    <style>
+        #sidebar-content {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            width: 200px; /* Adjust width as needed */
+        }
+
+        #content-wrapper {
+            margin-right: 220px; /* Make space for the sidebar */
+            padding: 20px;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <div id="content-wrapper">
@@ -26,7 +45,7 @@
             <div id="location">
                 <p>Loading location...</p>
             </div>
-            <a href="n_t.html" class="back-button">Back to Current Weather</a>
+            <a id="backButton" href="#" class="back-button">Back to Current Weather</a>
         </div>
     </div>
 
@@ -34,54 +53,49 @@
         <p>Loading recommended artists...</p>
     </div>
 
-    </div>
-
     <script>
         const accuWeatherApiKey = 'insert your own key'; 
         const groqApiKey = 'insert your own key'; 
 
         async function getHistoricalWeather() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async position => {
-                    const { latitude, longitude } = position.coords;
+            const url = window.location.href;
+            const locationKey = url.split('city=')[1].split('&')[0];
+            const city_text = decodeURIComponent(url.split('city_text=')[1].split('&')[0]);
 
-                    try {
-                        const { locationKey, cityName, countryName } = await fetchLocationData(latitude, longitude);
-                        const historicalWeather = await fetchHistoricalWeatherData(locationKey);
+            try {
+                const historicalWeather = await fetchHistoricalWeatherData(locationKey);
 
-                        displayLocation(cityName, countryName, historicalWeather);
+                displayLocation(city_text, historicalWeather);
 
-                        const weatherDocument = `City: ${cityName}, Country: ${countryName}, Temperature: ${historicalWeather.Temperature.Metric.Value}°C, Weather: ${historicalWeather.WeatherText}`;
-                        
-                        // Generate music genre
-                        const musicGenre = await generateMusicGenre(weatherDocument);
-                        document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
+                const weatherDocument = `City: ${city_text}, Temperature: ${historicalWeather.Temperature.Metric.Value}°C, Weather: ${historicalWeather.WeatherText}`;
+                
+                // Generate music genre
+                const musicGenre = await generateMusicGenre(weatherDocument);
+                document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
 
-                        // Generate recommended tracks
-                        const recommendedTracks = await generateRecommendedTracks(musicGenre);
-                        document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks:</p><ol>${recommendedTracks}</ol>`;
+                // Generate recommended tracks
+                const recommendedTracks = await generateRecommendedTracks(musicGenre);
+                document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks:</p><ol>${recommendedTracks}</ol>`;
 
-                        // Generate recommended artists
-                        const artists = await generateArtists(musicGenre);
-                        document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><ol>${artists}</ol>`;
+                // Generate recommended artists
+                const artists = await generateArtists(musicGenre);
+                document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><ol>${artists}</ol>`;
 
-                    } catch (error) {
-                        displayError('weather', `Error fetching data: ${error.message}`);
-                    }
-                }, error => {
-                    displayError('weather', `Error getting location: ${error.message}`);
-                });
-            } else {
-                displayError('weather', 'Geolocation is not supported by this browser.');
+                // Update back button URL
+                const backButton = document.getElementById('backButton');
+                backButton.href = `n_t.html?city=${encodeURIComponent(locationKey)}&city_text=${encodeURIComponent(city_text)}`;
+
+            } catch (error) {
+                displayError('weather', `Error fetching data: ${error.message}`);
             }
         }
 
-        function displayLocation(cityName, countryName, weather) {
+        function displayLocation(city_text, weather) {
+            city_text = decodeURIComponent(city_text);
+            city_text = city_text.split(',')[0];
             const locationInfo = `
-                <p>City: ${cityName}</p>
-                <p>Country: ${countryName}</p>
+                <p>City: ${city_text}</p>
                 <p>Temperature: ${weather.Temperature.Metric.Value}°C</p>
-                <p>Weather: ${weather.WeatherText}</p>
             `;
             document.getElementById('location').innerHTML = locationInfo;
             document.getElementById('weather').innerHTML = `<p>Weather: ${weather.WeatherText}</p>`;
@@ -89,19 +103,6 @@
 
         function displayError(elementId, message) {
             document.getElementById(elementId).innerHTML = `<p class="error">${message}</p>`;
-        }
-
-        async function fetchLocationData(latitude, longitude) {
-            const locationResponse = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`);
-            if (!locationResponse.ok) throw new Error(`Location API error: ${locationResponse.status} ${locationResponse.statusText}`);
-            const locationData = await locationResponse.json();
-            if (!locationData.Key) throw new Error('Invalid location data');
-            
-            return {
-                locationKey: locationData.Key,
-                cityName: locationData.LocalizedName,
-                countryName: locationData.Country.LocalizedName
-            };
         }
 
         async function fetchHistoricalWeatherData(locationKey) {
@@ -113,19 +114,16 @@
             return weatherData[0];
         }
 
-        // Generate music genre using Groq API
         async function generateMusicGenre(weatherDocument) {
             const prompt = "Generate a detailed genre of music you believe best fits with this weather. Don't make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd recommend by inserting the genre name. (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specific and detailed genres.";
             return await groqLlamaGenerateSummary(prompt, weatherDocument);
         }
 
-        // Generate recommended tracks using Groq API
         async function generateRecommendedTracks(musicGenre) {
             const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected). Once the song title is displayed in "" say "by (artist's name insert)`;
             return await groqLlamaGenerateSummary(prompt, "");
         }
 
-        // Generate recommended artists using Groq API
         async function generateArtists(musicGenre) {
             const prompt = `Generate a number list of 5 musical artists that best align with this genre: ${musicGenre}. Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (don't write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. For diversity purposes do not list any artists listed in the tracks generated)`;
             return await groqLlamaGenerateSummary(prompt, "");
