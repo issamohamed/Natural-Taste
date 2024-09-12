@@ -26,64 +26,65 @@
             <div id="location">
                 <p>Loading location...</p> 
             </div>
-            <a href="forecast.html" class="forecast-button">Forecast</a>
-            <a href="historical.html" class="historical-button">Yesterday's Forecast</a>
+            <div id="forecast_button">
+                <a href="javascript:void(0);" id="forecast-link" class="forecast-button">Forecast</a>
+            </div>
+            <div id="historical_button">
+                <a href="javascript:void(0);" id="historical-link" class="historical-button">Yesterday's Forecast</a>
+            </div>
         </div>
     </div>
 
     <div id="artists">
         <p>Loading recommended artists...</p> 
     </div>
-    <a href="index.html" class="back-button">Back</a>
+    <a href="intel.html" class="back-button">Back</a>
     <script>
-        const accuWeatherApiKey = 'insert your own key';
-        const groqApiKey = 'insert your own key';
+        const accuWeatherApiKey = 'umMAL6xWyDaqqZT3wBuoFc9sXGzl5ccp';
+        const groqApiKey = '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';
 
         async function getWeather() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async position => {
-                    const { latitude, longitude } = position.coords;
+            const url = window.location.href;
+            const locationKey = new URLSearchParams(window.location.search).get('city');
+            const city_name = new URLSearchParams(window.location.search).get('city_text');
 
-                    try {
-                        const { locationKey, cityName, countryName } = await fetchLocationData(latitude, longitude);
-                        const weather = await fetchWeatherData(locationKey);
+            if (!locationKey || !city_name) {
+                displayError('weather', 'Missing location key or city name.');
+                return;
+            }
 
-                        displayLocation(cityName, countryName, weather);
-                        
-                        const weatherDocument = `City: ${cityName}, Country: ${countryName}, Temperature: ${weather.Temperature.Metric.Value}°C, Weather: ${weather.WeatherText}`;
-                        const musicGenre = await generateMusicGenre(weatherDocument);
-                        document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
+            try {
+                const weather = await fetchWeatherData(locationKey);
 
-                        const recommendedTracks = await generateRecommendedTracks(musicGenre);
-                        document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks:</p><ol>${recommendedTracks}</ol>`;
+                displayLocation(locationKey, weather, city_name);
+                
+                const weatherDocument = `City: ${locationKey}, Temperature: ${weather.Temperature.Metric.Value}°C, Weather: ${weather.WeatherText}`;
+                const musicGenre = await generateMusicGenre(weatherDocument);
+                document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
 
-                        const artists = await generateArtists(musicGenre);
-                        document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><ol>${artists}</ol>`;
+                const recommendedTracks = await generateRecommendedTracks(musicGenre);
+                document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks:</p><ol>${recommendedTracks}</ol>`;
 
-                    } catch (error) {
-                        displayError('weather', `Error fetching data: ${error.message}`);
-                        setTimeout(() => {
-                            window.location.href = 'index.html'; // Redirect to index.html after 3 seconds
-                        }, 3000);
-                    }
-                }, error => {
-                    displayError('weather', `Error getting location: ${error.message}`);
-                    setTimeout(() => {
-                        window.location.href = 'index.html'; // Redirect to index.html after 3 seconds
-                    }, 3000);
-                });
-            } else {
-                displayError('weather', 'Geolocation is not supported by this browser.');
+                const artists = await generateArtists(musicGenre);
+                document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><ol>${artists}</ol>`;
+
+                // Update forecast and historical buttons with location key and city name
+                document.getElementById('forecast-link').href = `forecast.html?city=${encodeURIComponent(locationKey)}&city_text=${encodeURIComponent(city_name)}`;
+                document.getElementById('historical-link').href = `historical.html?city=${encodeURIComponent(locationKey)}&city_text=${encodeURIComponent(city_name)}`;
+
+            } catch (error) {
+                displayError('weather', `Error fetching data: ${error.message}`);
                 setTimeout(() => {
-                    window.location.href = 'index.html'; // Redirect to index.html after 3 seconds
+                    window.location.href = 'intel.html'; // Redirects to intel.html if there's any issues after 3 seconds
                 }, 3000);
             }
         }
 
-        function displayLocation(cityName, countryName, weather) {
+        function displayLocation(locationKey, weather, city_text) {
+            city_text = decodeURIComponent(city_text);
+            city_text = city_text.split(',')[0];
             const locationInfo = `
-                <p>City: ${cityName}</p>
-                <p>Country: ${countryName}</p>
+                <p>City: ${city_text}</p>
                 <p>Temperature: ${weather.Temperature.Metric.Value}°C</p>
             `;
             document.getElementById('location').innerHTML = locationInfo;
@@ -95,20 +96,7 @@
         function displayError(elementId, message) {
             document.getElementById(elementId).innerHTML = `<p class="error">${message}</p>`;
         }
-
-        async function fetchLocationData(latitude, longitude) {
-            const locationResponse = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${accuWeatherApiKey}&q=${latitude},${longitude}`);
-            if (!locationResponse.ok) throw new Error(`Location API error: ${locationResponse.status} ${locationResponse.statusText}`);
-            const locationData = await locationResponse.json();
-            if (!locationData.Key) throw new Error('Invalid location data');
-            
-            return {
-                locationKey: locationData.Key,
-                cityName: locationData.LocalizedName,
-                countryName: locationData.Country.LocalizedName
-            };
-        }
-
+        
         async function fetchWeatherData(locationKey) {
             const weatherResponse = await fetch(`https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${accuWeatherApiKey}`);
             if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
