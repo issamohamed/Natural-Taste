@@ -6,7 +6,7 @@ body {
     min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #ECDFCC; 
-    color: #1E201E; 
+    color: #1E201E;
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
@@ -56,7 +56,7 @@ body {
 /* Styling for forecast button */
 .forecast-button, .historical-button {
     display: inline-block;
-    background-color: #AAB396; 
+    background-color: #77a113; 
     color: #1E201E; 
     padding: 20px 50px;
     border-radius: 15px;
@@ -85,12 +85,12 @@ body {
 }
 
 .forecast-button:hover, .historical-button:hover, .back-button:hover {
-    background-color: #99A583;
+    background-color: #99A583; /* Slightly darker shade on hover */
 }
 
 /* Styling for music genre info */
 #music-genre {
-    background-color: #AAB396;
+    background-color: #AAB396; 
     border-radius: 10px;
     padding: 20px;
 }
