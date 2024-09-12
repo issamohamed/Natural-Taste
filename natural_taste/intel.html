@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Search</title>
+    <link rel="stylesheet" href="intel_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="centered">Enter your city</h1>
+        <form id="searchForm">
+            <input type="text" id="cityInput" placeholder="Enter city name" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="results"></div>
+        <a href="index.html" class="back-button">Back</a>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        // Function to set the wallpaper based on the current load
+        function setWallpaper() {
+            // Retrieve the current cycle index from localStorage or default to 0
+            let currentIndex = parseInt(localStorage.getItem('wallpaperIndex')) || 0;
+            
+            // Array of wallpaper image filenames
+            const wallpapers = ['city.jpeg', 'city_two.jpeg', 'city_three.jpeg', 'city_four.jpeg'];
+            
+            // Set the background image based on the current index
+            document.body.style.backgroundImage = `url('${wallpapers[currentIndex]}')`;
+            
+            // Update the index for the next page load
+            currentIndex = (currentIndex + 1) % wallpapers.length;
+            localStorage.setItem('wallpaperIndex', currentIndex);
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const cityInput = document.getElementById('cityInput').value;
+            
+            try {
+                const weatherResponse = await axios.get(`http://dataservice.accuweather.com/locations/v1/cities/search`, {
+                    params: {
+                        apikey: 'insert your own accuweather key',
+                        q: cityInput
+                    }
+                });
+
+                const cities = weatherResponse.data;
+                console.log(cities);
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+                // Creates a button for every available city option provided by accuweather
+                cities.forEach(city => {
+                    const button = document.createElement('button');
+                    button.textContent = `${city.LocalizedName}, ${city.AdministrativeArea.LocalizedName}, ${city.Country.LocalizedName}`;
+                    // When a city button is selected, appends the city's location key and name into the URL to be later extracted by n_t.html
+                    button.onclick = () => {
+                        const cityText = button.textContent;
+                        const cityKey = city.Key;
+                        window.location.href = `n_t.html?city=${encodeURIComponent(cityKey)}&city_text=${encodeURIComponent(cityText)}`;
+                    };
+                    resultsDiv.appendChild(button);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert("The city you are trying to search isn't available. \ Please try another.");
+            }
+        });
+
+        setWallpaper();
+    </script>
+    <style>
+        body {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: rgba(249, 249, 249, 0.8); 
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .centered {
+            text-align: center;
+        }
+        #searchForm {
+            margin-top: 20px;
+        }
+        #cityInput {
+            width: 80%;
+            height: 40px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+        }
+        button[type="submit"] {
+            width: 20%;
+            height: 40px;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #FF7F50;
+            color: #fff;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #3e8e41;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .back-button {
+            position: fixed; 
+            bottom: 20px; 
+            left: 20px; 
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        .back-button:hover {
+            background-color: #e68c54;
+        }
+    </style>
+</body>
+</html>
