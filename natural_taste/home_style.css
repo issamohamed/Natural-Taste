@@ -78,6 +78,7 @@ body {
 }
 
 .button:hover {
+    /* background-color: #FF7F50; */
     color: #FDF0E1;
 }
 
