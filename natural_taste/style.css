@@ -5,8 +5,8 @@ body {
     justify-content: space-between;
     min-height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: #ECDFCC; 
-    color: #1E201E;
+    background-color: #E7F0DC; 
+    color: #E7F0DC;
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
@@ -39,7 +39,7 @@ body {
 
 /* Styling for weather info */
 #weather {
-    background-color: #AAB396; 
+    background-color: #597445; 
     border-radius: 10px;
     padding: 20px;
     display: flex;
@@ -50,13 +50,13 @@ body {
 #weather p {
     font-size: 2em;
     margin: 10px 0;
-    color: #1E201E; 
+    color: #E7F0DC; 
 }
 
 /* Styling for forecast button */
 .forecast-button, .historical-button {
     display: inline-block;
-    background-color: #77a113; 
+    background-color: #99A583; 
     color: #1E201E; 
     padding: 20px 50px;
     border-radius: 15px;
@@ -68,8 +68,8 @@ body {
 }
 .back-button {
     display: inline-block;
-    background-color: #AAB396; 
-    color: #1E201E; 
+    background-color: #597445; 
+    color: #E7F0DC; 
     padding: 10px 20px; 
     border-radius: 15px;
     text-align: center;
@@ -84,13 +84,16 @@ body {
 
 }
 
-.forecast-button:hover, .historical-button:hover, .back-button:hover {
-    background-color: #99A583; /* Slightly darker shade on hover */
+.forecast-button:hover, .historical-button:hover {
+    background-color: #77a113; /* Slightly darker shade on hover */
+}
+.back-button:hover {
+    background-color: #99A583;
 }
 
 /* Styling for music genre info */
 #music-genre {
-    background-color: #AAB396; 
+    background-color: #597445; 
     border-radius: 10px;
     padding: 20px;
 }
@@ -98,12 +101,12 @@ body {
 #music-genre p {
     font-size: 1.5em;
     margin: 10px 0;
-    color: #1E201E; 
+    color: #E7F0DC; 
 }
 
 /* Styling for recommended tracks */
 #recommended-tracks {
-    background-color: #AAB396; 
+    background-color: #597445; 
     border-radius: 10px;
     padding: 20px;
 }
@@ -111,7 +114,7 @@ body {
 #recommended-tracks p {
     font-size: 1.7em;
     margin: 10px 0;
-    color: #1E201E; 
+    color: #E7F0DC; 
 }
 
 #recommended-tracks ol {
@@ -119,12 +122,12 @@ body {
     margin: 10px 0;
     list-style-position: inside;
     padding-left: 0;
-    color: #1E201E; 
+    color: #E7F0DC; 
 }
 
 /* Styling for the location information */
 #location {
-    background-color: #AAB396; 
+    background-color: #597445; 
     border-radius: 10px;
     padding: 20px;
 }
@@ -132,12 +135,12 @@ body {
 #location p {
     font-size: 1.5em;
     margin: 5px 0;
-    color: #1E201E; 
+    color: #E7F0DC; 
 }
 
 /* Styling for recommended artists */
 #artists {
-    background-color: #AAB396; 
+    background-color: #597445; 
     font-size: 1.7em;
     border-radius: 10px;
     padding: 20px;
