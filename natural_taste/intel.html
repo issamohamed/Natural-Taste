@@ -1,3 +1,4 @@
+<!-- intel.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,9 +40,9 @@
             const cityInput = document.getElementById('cityInput').value;
             
             try {
-                const weatherResponse = await axios.get(`http://dataservice.accuweather.com/locations/v1/cities/search`, {
+                const weatherResponse = await axios.get(`https://dataservice.accuweather.com/locations/v1/cities/search`, {
                     params: {
-                        apikey: 'insert your own accuweather key',
+                        apikey: 'insert your key here',
                         q: cityInput
                     }
                 });
@@ -70,66 +71,5 @@
 
         setWallpaper();
     </script>
-    <style>
-        body {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        .container {
-            width: 80%;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: rgba(249, 249, 249, 0.8); 
-            border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .centered {
-            text-align: center;
-        }
-        #searchForm {
-            margin-top: 20px;
-        }
-        #cityInput {
-            width: 80%;
-            height: 40px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-        }
-        button[type="submit"] {
-            width: 20%;
-            height: 40px;
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            background-color: #FF7F50;
-            color: #fff;
-            cursor: pointer;
-        }
-        button[type="submit"]:hover {
-            background-color: #3e8e41;
-        }
-        #results {
-            margin-top: 20px;
-        }
-        .back-button {
-            position: fixed; 
-            bottom: 20px; 
-            left: 20px; 
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #333;
-            text-decoration: none;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        }
-        .back-button:hover {
-            background-color: #e68c54;
-        }
-    </style>
 </body>
 </html>
