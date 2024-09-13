@@ -12,26 +12,32 @@
             <div id="weather">
             </div>
         </div>
-        <div id="music-genre">
-            <p>Loading music genre...</p>
+        <div id="genre-container">
+            <div id="music-genre">
+                Loading music genres...
+            </div>
         </div>
-        <div id="recommended-tracks">
-            <p>Loading recommended tracks...</p>
+        <div id="tracks-container">
+            <div id="recommended-tracks">
+                Loading recommended tracks...
+            </div>
+        </div>
+        <div id="artists-container">
+            <div id="artists">
+                Loading recommended artists...
+            </div>
         </div>
     </div>
     <div id="sidebar-content">
         <div id="location">
-            <p>Loading location...</p>
-        </div>
-        <div id="artists">
-            <p>Loading recommended artists...</p>
+            Loading location...
         </div>
         <a href="javascript:void(0);" id="back-button" class="back-button">Back</a>
     </div>
 
     <script>
-        const accuWeatherApiKey = 'insert your own key';
-        const groqApiKey = 'insert your own key';
+        const accuWeatherApiKey = 'insert your key here';
+        const groqApiKey = 'insert your key here';
 
         async function getWeather() {
             const url = window.location.href;
@@ -59,13 +65,28 @@
 
                     const weatherDocument = `Min Temp: ${dailyForecast.Temperature.Minimum.Value}, Max Temp: ${dailyForecast.Temperature.Maximum.Value}, Weather: ${dailyForecast.Day.IconPhrase}`;
                     const musicGenre = await generateMusicGenre(weatherDocument);
-                    document.getElementById('music-genre').innerHTML += `<p>Music Genre for ${new Date(dailyForecast.Date).toDateString()}: ${musicGenre}</p>`;
+                    document.getElementById('music-genre').innerHTML += `
+                        <div class="genre-day">
+                            <p class="genre-header">Music Genre:</p>
+                            <p class="genre-description">${musicGenre}</p>
+                        </div>
+                    `;
 
                     const recommendedTracks = await generateRecommendedTracks(musicGenre);
-                    document.getElementById('recommended-tracks').innerHTML += `<p>Recommended Tracks for ${new Date(dailyForecast.Date).toDateString()}:</p><ol>${recommendedTracks}</ol>`;
+                    document.getElementById('recommended-tracks').innerHTML += `
+                        <div class="tracks-day">
+                            <p class="tracks-header">Recommended Track:</p>
+                            <p class="tracks-description">${recommendedTracks}</p>
+                        </div>
+                    `;
 
                     const artists = await generateArtists(musicGenre);
-                    document.getElementById('artists').innerHTML += `<p>Recommended Artists for ${new Date(dailyForecast.Date).toDateString()}:</p><ol>${artists}</ol>`;
+                    document.getElementById('artists').innerHTML += `
+                        <div class="artist-day">
+                            <p class="artist-header">Recommended Artist:</p>
+                            <p class="artist-description">${artists}</p>
+                        </div>
+                    `;
                 }
 
                 // Set up the back button
@@ -112,12 +133,12 @@
         }
 
         async function generateRecommendedTracks(musicGenre) {
-            const prompt = `Generate 1 song that best aligns with the genre: ${musicGenre}. Merely state the song's title. There can be nothing else written but the song's title and then state "by" and insert the artist's name.`;
+            const prompt = `Generate 1 song that best aligns with the genre: ${musicGenre}. Merely state the song's title. There can be nothing else written but the song's title and then state "by" and insert the artist's name. Never ever make up a song that doesn't exist`;
             return await groqLlamaGenerateSummary(prompt, "");
         }
 
         async function generateArtists(musicGenre) {
-            const prompt = `Generate 1 musical artist that closely aligns with the genre: ${musicGenre}. Merely state the artist's name.`;
+            const prompt = `Generate 1 musical artist that closely aligns with the genre: ${musicGenre}. Merely state the artist's name. Never ever make up a musical artist who doesn't exist`;
             return await groqLlamaGenerateSummary(prompt, "");
         }
 
