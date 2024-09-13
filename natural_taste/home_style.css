@@ -20,12 +20,6 @@ body {
     text-align: right;
 }
 
-.top-right h1 {
-    font-size: 1.5em;
-    margin: 0;
-    color: #FF7F50;
-}
-
 .socials {
     margin-top: 10px;
 }
@@ -67,21 +61,26 @@ body {
     bottom: 60px;
 }
 
-.button {
-    font-size: 2em;
-    color: #FF7F50; 
-    border: 2px solid #FDF0E1; 
-    padding: 10px 20px;
+
+.glass-button {
+    display: inline-block;
+    padding: 24px 32px;
+    border: 0;
     text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.02); /* Almost fully transparent */
+    border: 1px solid rgba(255, 255, 255, 0.05); /* Subtle border for visibility */
+    backdrop-filter: blur(20px); /* Mild blur effect */
+    color: rgba(255, 255, 255, 0.8); /* Lighter text color */
+    font-size: 14px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
 }
 
-.button:hover {
-    /* background-color: #FF7F50; */
-    color: #FDF0E1;
+.glass-button:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly increased opacity on hover */
 }
-
 
 .logo {
     width: 150px;
