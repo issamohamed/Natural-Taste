@@ -1,3 +1,4 @@
+/* intel_style.css */
 html, body {
     height: 100%; 
     margin: 0; 
@@ -19,7 +20,7 @@ body {
     width: 80%;
     margin: 40px auto;
     padding: 20px;
-    background-color: rgba(249, 249, 249, 0.8); /* Slightly transparent background for better visibility */
+    background-color: rgba(249, 249, 249, 0.8);
     border: 1px solid #ddd;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -32,6 +33,7 @@ body {
 #searchForm {
     margin-top: 20px;
 }
+
 #cityInput {
     width: 80%;
     height: 40px;
@@ -63,7 +65,7 @@ button[type="submit"]:hover {
 .back-button {
     position: fixed; 
     bottom: 20px;
-    left: 20px; 
+    right: 20px; 
     padding: 10px 20px;
     font-size: 16px;
     color: #fff;
