@@ -54,8 +54,8 @@
     </div>
 
     <script>
-        const accuWeatherApiKey = 'insert your own key'; 
-        const groqApiKey = 'insert your own key'; 
+        const accuWeatherApiKey = 'insert your key here'; 
+        const groqApiKey = 'insert your key here'; 
 
         async function getHistoricalWeather() {
             const url = window.location.href;
@@ -120,12 +120,12 @@
         }
 
         async function generateRecommendedTracks(musicGenre) {
-            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected). Once the song title is displayed in "" say "by (artist's name insert)`;
+            const prompt = `Generate 5 songs that best align with the genre: ${musicGenre}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected). Once the song title is displayed in "" say "by (artist's name insert). Never ever make up a song that doesn't exist.`;
             return await groqLlamaGenerateSummary(prompt, "");
         }
 
         async function generateArtists(musicGenre) {
-            const prompt = `Generate a number list of 5 musical artists that best align with this genre: ${musicGenre}. Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (don't write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. For diversity purposes do not list any artists listed in the tracks generated)`;
+            const prompt = `Generate a number list of 5 musical artists that best align with this genre: ${musicGenre}. Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (don't write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. For diversity purposes do not list any artists listed in the tracks generated). Never ever make up a musical who doesn't exist.`;
             return await groqLlamaGenerateSummary(prompt, "");
         }
 
