@@ -5,5 +5,11 @@ URL link: jocular-fox-018062.netlify.app <br />
 <br />
 <br />
 Natural Taste offers a unique way to discover music by letting the weather inspire your playlist. By combining real-time weather data with AI-powered music recommendations, I've created an application that provides a fresh and dynamic music discovery experience tailored to the user's environment.
+<br />
+<br />
+<br />
+
+
+
 
 
