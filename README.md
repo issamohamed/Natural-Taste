@@ -13,9 +13,13 @@ How It Works
 User Interface: The project consists of several HTML pages that provide different functionalities:
 
 index.html: The landing page with social links and a call-to-action.
+<br />
 intel.html: Allows users to enter their city for weather search.
+<br />
 n_t.html: Displays current weather, music genre, and recommended tracks.
+<br />
 forecast.html: Shows weather forecast and corresponding music recommendations.
+<br />
 historical.html: Presents yesterday's weather and music recommendations.
 
 
