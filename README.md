@@ -5,6 +5,10 @@ A weather-inspired music discovery platform that creates personalized playlists 
 URL link: jocular-fox-018062.netlify.app <br />
 
 ![Natural Taste Banner](https://github.com/user-attachments/assets/a48ce029-6d6c-40d5-b30b-f544fd1f43de)
+<img width="1439" alt="Screenshot 2024-09-12 at 9 08 00 PM" src="https://github.com/user-attachments/assets/26dc72eb-73cd-455d-8a90-4f7a3a3e0559" />
+<img width="1436" alt="Screenshot 2024-09-12 at 9 08 33 PM" src="https://github.com/user-attachments/assets/6ad029e8-c1bc-4545-9aff-c683c1a5862e" />
+<img width="1437" alt="Screenshot 2024-09-12 at 9 08 20 PM" src="https://github.com/user-attachments/assets/9e89667c-c296-42a3-8052-6386385dc62e" />
+<img width="1438" alt="Screenshot 2024-09-12 at 9 08 44 PM" src="https://github.com/user-attachments/assets/7804a250-fb6f-4ef7-b4a6-c502d7f78232" />
 
 ## 🌟 Overview
 
