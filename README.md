@@ -74,8 +74,8 @@ API keys stay on the server and are never shipped to the page:
    | Build command | *(leave empty)* |
    | Build output directory | `natural_taste` |
 
-3. After the first deploy, add the secrets under **Settings → Variables and secrets**,
-   for **both** Production and Preview:
+3. After the first deploy, add the secrets under **Settings → Variables and secrets**
+   (choose **Secret**, not plaintext), for **both** Production and Preview:
 
    | Name | Where to get it |
    | --- | --- |
@@ -85,6 +85,10 @@ API keys stay on the server and are never shipped to the page:
 4. Redeploy so the functions pick up the secrets.
 
 The `functions/` directory is detected automatically — no extra configuration needed.
+
+There is deliberately no `wrangler.toml` in this repo. For a dashboard-linked Pages
+project a Wrangler config file becomes the source of truth and makes the same fields
+read-only in the dashboard, so the build settings above live in the dashboard instead.
 
 ## 💻 Local Development
 

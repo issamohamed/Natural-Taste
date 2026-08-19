@@ -4,8 +4,8 @@
   "private": true,
   "description": "Music recommendations based on your local weather.",
   "scripts": {
-    "dev": "wrangler pages dev",
-    "deploy": "wrangler pages deploy"
+    "dev": "wrangler pages dev natural_taste",
+    "deploy": "wrangler pages deploy natural_taste"
   },
   "devDependencies": {
     "wrangler": "^4.42.0"
