@@ -28,7 +28,22 @@ const json = (body, status = 200) =>
 const clean = (s) => String(s ?? "").trim().slice(0, 300);
 const str = (v) => (typeof v === "string" ? v.trim() : "");
 
+// Models sometimes answer with "Artist - Title" in the title field even when
+// asked not to, which renders the artist twice on the row. Strip the artist
+// prefix when it is clearly repeated, and drop wrapping quotes.
+function cleanTitle(title, artist) {
+  let t = title.replace(/^["'“‘]+|["'”’]+$/g, "").trim();
+  if (artist) {
+    const escaped = artist.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const prefix = new RegExp(`^${escaped}\\s*[-–—:|]\\s*`, "i");
+    const stripped = t.replace(prefix, "").trim();
+    if (stripped) t = stripped;
+  }
+  return t;
+}
+
 const NO_INVENTING = "Never invent a song, album, or artist that does not exist; only name real, released music.";
+const TITLE_ONLY = "The title field must hold only the song's own title — no artist name, no dash, no quotation marks.";
 
 const KINDS = {
   genre: {
@@ -42,10 +57,13 @@ const KINDS = {
     budget: 1024,
     json: true,
     prompt: ({ genre }) =>
-      `Generate 5 songs that best align with the genre: ${clean(genre)}, ranked best first. ${NO_INVENTING} Return strict JSON only, no markdown. Schema: {"tracks":[{"title":string,"artist":string}]}`,
+      `Generate 5 songs that best align with the genre: ${clean(genre)}, ranked best first. ${NO_INVENTING} ${TITLE_ONLY} Return strict JSON only, no markdown. Schema: {"tracks":[{"title":string,"artist":string}]}`,
     shape: (parsed) => ({
       items: (parsed?.tracks ?? [])
-        .map((t) => ({ title: str(t?.title), artist: str(t?.artist) }))
+        .map((t) => {
+          const artist = str(t?.artist);
+          return { title: cleanTitle(str(t?.title), artist), artist };
+        })
         .filter((t) => t.title),
     }),
   },
@@ -74,10 +92,11 @@ const KINDS = {
     budget: 512,
     json: true,
     prompt: ({ genre }) =>
-      `Generate 1 song that best aligns with the genre: ${clean(genre)}. ${NO_INVENTING} Return strict JSON only, no markdown. Schema: {"title":string,"artist":string}`,
-    shape: (parsed) => ({
-      item: { title: str(parsed?.title), artist: str(parsed?.artist) },
-    }),
+      `Generate 1 song that best aligns with the genre: ${clean(genre)}. ${NO_INVENTING} ${TITLE_ONLY} Return strict JSON only, no markdown. Schema: {"title":string,"artist":string}`,
+    shape: (parsed) => {
+      const artist = str(parsed?.artist);
+      return { item: { title: cleanTitle(str(parsed?.title), artist), artist } };
+    },
   },
 
   forecast_artist: {
