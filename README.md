@@ -14,7 +14,7 @@ A weather-inspired music discovery platform that creates personalized playlists 
 
 Natural Taste offers a unique way to discover music by letting the weather inspire your playlist. By combining real-time weather data with AI-powered music recommendations, this application provides a fresh and dynamic music discovery experience tailored to your environment.
 
-🔗 **Live Demo**: [Natural Taste](https://jocular-fox-018062.netlify.app)
+🔗 **Live Demo**: [Natural Taste](https://naturaltaste.issamohamed.com/)
 
 ## ✨ Features
 
