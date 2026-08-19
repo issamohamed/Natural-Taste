@@ -1,0 +1,13 @@
+{
+  "name": "natural-taste",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Music recommendations based on your local weather.",
+  "scripts": {
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler pages deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.42.0"
+  }
+}

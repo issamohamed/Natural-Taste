@@ -33,6 +33,17 @@ Natural Taste offers a unique way to discover music by letting the weather inspi
 - **Music Recommendations**: Groq AI API for intelligent music suggestions
 - **Real-time Updates**: Dynamic content loading based on user location
 
+Both APIs are called from server-side routes rather than from the browser, so the
+API keys stay on the server and are never shipped to the page:
+
+| Route | Purpose |
+| --- | --- |
+| `GET /api/weather?kind=search&q=` | City lookup |
+| `GET /api/weather?kind=current&key=` | Current conditions |
+| `GET /api/weather?kind=forecast&key=` | 5-day forecast |
+| `GET /api/weather?kind=historical&key=` | Past 24 hours |
+| `POST /api/recommend` | Genre, track, and artist suggestions |
+
 ## 💫 How It Works
 
 1. **Location Input**
@@ -50,6 +61,41 @@ Natural Taste offers a unique way to discover music by letting the weather inspi
    - Generates appropriate music genre suggestions
    - Provides specific track and artist recommendations
    - Updates recommendations based on weather changes
+
+## 🛠 Deploying to Cloudflare Pages
+
+1. In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**,
+   and select this repository.
+2. Build settings — there is no build step:
+
+   | Setting | Value |
+   | --- | --- |
+   | Framework preset | None |
+   | Build command | *(leave empty)* |
+   | Build output directory | `natural_taste` |
+
+3. After the first deploy, add the secrets under **Settings → Variables and secrets**,
+   for **both** Production and Preview:
+
+   | Name | Where to get it |
+   | --- | --- |
+   | `ACCUWEATHER_API_KEY` | https://developer.accuweather.com |
+   | `GROQ_API_KEY` | https://console.groq.com |
+
+4. Redeploy so the functions pick up the secrets.
+
+The `functions/` directory is detected automatically — no extra configuration needed.
+
+## 💻 Local Development
+
+```bash
+npm install
+cp .dev.vars.example .dev.vars   # then fill in your two keys
+npm run dev
+```
+
+`.dev.vars` is git-ignored. Never put a key in `natural_taste/` — everything in that
+directory is served to the browser as-is.
 
 ## 🎯 Use Cases
 

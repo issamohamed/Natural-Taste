@@ -40,9 +40,11 @@
             const cityInput = document.getElementById('cityInput').value;
             
             try {
-                const weatherResponse = await axios.get(`https://dataservice.accuweather.com/locations/v1/cities/search`, {
+                // Goes through this site's own /api route so the AccuWeather key
+                // stays on the server instead of shipping with the page.
+                const weatherResponse = await axios.get('/api/weather', {
                     params: {
-                        apikey: 'insert your key here',
+                        kind: 'search',
                         q: cityInput
                     }
                 });

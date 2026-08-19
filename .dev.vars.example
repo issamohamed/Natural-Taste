@@ -1,0 +1,4 @@
+# Copy to .dev.vars and fill in for local development (.dev.vars is git-ignored).
+# The same names must be set as secrets in the Cloudflare Pages dashboard.
+ACCUWEATHER_API_KEY=your-accuweather-key-here
+GROQ_API_KEY=your-groq-key-here

@@ -1,0 +1,15 @@
+# natural-taste — Cloudflare Pages configuration
+#
+# Static site in natural_taste/, with server-side API routes in functions/.
+#
+# Secrets (Cloudflare dashboard → Workers & Pages → natural-taste →
+# Settings → Variables and secrets), set for both Production and Preview:
+#
+#   ACCUWEATHER_API_KEY — from developer.accuweather.com
+#   GROQ_API_KEY        — from console.groq.com
+#
+# For local dev put the same names in .dev.vars (git-ignored).
+
+name = "natural-taste"
+compatibility_date = "2026-08-19"
+pages_build_output_dir = "natural_taste"

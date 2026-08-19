@@ -36,8 +36,9 @@
     </div>
 
     <script>
-        const accuWeatherApiKey = 'insert your key here';
-        const groqApiKey = 'insert your key here';
+        // Weather and recommendations go through this site's own /api routes.
+        // The AccuWeather and Groq keys are Cloudflare secrets held on the
+        // server and are never sent to the browser.
 
         async function getWeather() {
             const url = window.location.href;
@@ -121,53 +122,37 @@
         }
 
         async function fetchWeatherData(locationKey) {
-            const weatherResponse = await fetch(`https://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${accuWeatherApiKey}`);
-            if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status} ${weatherResponse.statusText}`);
-            const weatherData = await weatherResponse.json();
+            const weatherResponse = await fetch(`/api/weather?kind=forecast&key=${encodeURIComponent(locationKey)}`);
+            const weatherData = await weatherResponse.json().catch(() => null);
+            if (!weatherResponse.ok) throw new Error(weatherData?.error || `Weather API error: ${weatherResponse.status}`);
+            if (!weatherData || !weatherData.DailyForecasts) throw new Error('Invalid weather data');
             return weatherData;
         }
 
         async function generateMusicGenre(weatherDocument) {
-            const prompt = "Generate a detailed genre of music that best fits this weather. Make sure to only state the Music Genre in your response, nothing else.";
-            return await groqLlamaGenerateSummary(prompt, weatherDocument);
+            return await recommend({ kind: 'forecast_genre', weather: weatherDocument });
         }
 
         async function generateRecommendedTracks(musicGenre) {
-            const prompt = `Generate 1 song that best aligns with the genre: ${musicGenre}. Merely state the song's title. There can be nothing else written but the song's title and then state "by" and insert the artist's name. Never ever make up a song that doesn't exist`;
-            return await groqLlamaGenerateSummary(prompt, "");
+            return await recommend({ kind: 'forecast_track', genre: musicGenre });
         }
 
         async function generateArtists(musicGenre) {
-            const prompt = `Generate 1 musical artist that closely aligns with the genre: ${musicGenre}. Merely state the artist's name. Never ever make up a musical artist who doesn't exist`;
-            return await groqLlamaGenerateSummary(prompt, "");
+            return await recommend({ kind: 'forecast_artist', genre: musicGenre });
         }
 
-        async function groqLlamaGenerateSummary(prompt, weatherDocument) {
-            const url = "https://api.groq.com/openai/v1/chat/completions";
-            const postData = {
-                messages: [
-                    {
-                        role: 'user',
-                        content: `${prompt} ${weatherDocument}`
-                    }
-                ],
-                model: 'llama3-70b-8192',
-                temperature: 1,
-                max_tokens: 1024
-            };
-
-            const response = await fetch(url, {
+        async function recommend(payload) {
+            const response = await fetch('/api/recommend', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${groqApiKey}`
-                },
-                body: JSON.stringify(postData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const responseData = await response.json();
-            return responseData.choices[0].message.content.trim();
+            const data = await response.json().catch(() => null);
+            if (!response.ok) throw new Error(data?.error || `Recommendation error: ${response.status}`);
+            if (!data || !data.text) throw new Error('Invalid response structure');
+
+            return data.text.trim();
         }
 
         window.onload = getWeather;
