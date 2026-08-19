@@ -40,7 +40,7 @@
             const cityInput = document.getElementById('cityInput').value;
             
             try {
-                // Goes through this site's own /api route so the AccuWeather key
+                // Goes through this site's own /api route so the WeatherAPI key
                 // stays on the server instead of shipping with the page.
                 const weatherResponse = await axios.get('/api/weather', {
                     params: {
@@ -50,18 +50,22 @@
                 });
 
                 const cities = weatherResponse.data;
-                console.log(cities);
                 const resultsDiv = document.getElementById('results');
                 resultsDiv.innerHTML = '';
-                // Creates a button for every available city option provided by accuweather
+
+                if (!cities.length) {
+                    alert("The city you are trying to search isn't available. Please try another.");
+                    return;
+                }
+
+                // Creates a button for every available city option
                 cities.forEach(city => {
                     const button = document.createElement('button');
-                    button.textContent = `${city.LocalizedName}, ${city.AdministrativeArea.LocalizedName}, ${city.Country.LocalizedName}`;
-                    // When a city button is selected, appends the city's location key and name into the URL to be later extracted by n_t.html
+                    button.textContent = city.label;
+                    // When a city button is selected, appends the city's location id and name into the URL to be later extracted by n_t.html
                     button.onclick = () => {
                         const cityText = button.textContent;
-                        const cityKey = city.Key;
-                        window.location.href = `n_t.html?city=${encodeURIComponent(cityKey)}&city_text=${encodeURIComponent(cityText)}`;
+                        window.location.href = `n_t.html?city=${encodeURIComponent(city.id)}&city_text=${encodeURIComponent(cityText)}`;
                     };
                     resultsDiv.appendChild(button);
                 });

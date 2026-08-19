@@ -29,7 +29,7 @@ Natural Taste offers a unique way to discover music by letting the weather inspi
 
 
 ### API Integration
-- **Weather Data**: AccuWeather API for accurate weather information
+- **Weather Data**: WeatherAPI.com for current conditions, forecasts, and history
 - **Music Recommendations**: Groq AI API for intelligent music suggestions
 - **Real-time Updates**: Dynamic content loading based on user location
 
@@ -41,7 +41,7 @@ API keys stay on the server and are never shipped to the page:
 | `GET /api/weather?kind=search&q=` | City lookup |
 | `GET /api/weather?kind=current&key=` | Current conditions |
 | `GET /api/weather?kind=forecast&key=` | 5-day forecast |
-| `GET /api/weather?kind=historical&key=` | Past 24 hours |
+| `GET /api/weather?kind=historical&key=` | Yesterday's conditions |
 | `POST /api/recommend` | Genre, track, and artist suggestions |
 
 ## 💫 How It Works
@@ -52,7 +52,7 @@ API keys stay on the server and are never shipped to the page:
    - Displays formatted location confirmation
 
 2. **Weather Processing**
-   - Fetches real-time weather data from AccuWeather
+   - Fetches real-time weather data from WeatherAPI.com
    - Processes current conditions, forecasts, and historical data
    - Displays temperature, weather description, and related metrics
 
@@ -79,7 +79,7 @@ API keys stay on the server and are never shipped to the page:
 
    | Name | Where to get it |
    | --- | --- |
-   | `ACCUWEATHER_API_KEY` | https://developer.accuweather.com |
+   | `WEATHERAPI_KEY` | https://www.weatherapi.com |
    | `GROQ_API_KEY` | https://console.groq.com |
 
 4. Redeploy so the functions pick up the secrets.
