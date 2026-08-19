@@ -1,0 +1,443 @@
+/* ==========================================================================
+   Natural Taste — bento dashboard
+   Shared by the three results pages. Each page sets a theme class on <body>
+   (theme-now / theme-past / theme-ahead) which only swaps the palette; the
+   layout and components below are common to all of them.
+   ========================================================================== */
+
+:root {
+    --radius: 20px;
+    --radius-sm: 14px;
+    --gap: 18px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+            Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* --- Palettes ---------------------------------------------------------- */
+
+.theme-now {
+    --bg: #0f1410;
+    --bg-glow: #1d2a1b;
+    --surface: #18201a;
+    --surface-2: #1f2a20;
+    --border: #2c3a2c;
+    --text: #eaf2e4;
+    --text-dim: #9dab97;
+    --accent: #a3d977;
+    --accent-ink: #16210f;
+}
+
+.theme-past {
+    --bg: #0d1414;
+    --bg-glow: #16302c;
+    --surface: #141e1d;
+    --surface-2: #1a2726;
+    --border: #293a38;
+    --text: #e6f0ee;
+    --text-dim: #93a5a2;
+    --accent: #6fd8c4;
+    --accent-ink: #08221d;
+}
+
+.theme-ahead {
+    --bg: #0d1017;
+    --bg-glow: #182238;
+    --surface: #141926;
+    --surface-2: #1a2130;
+    --border: #27304200;
+    --border: #273042;
+    --text: #e7ecf6;
+    --text-dim: #98a3b8;
+    --accent: #8fb4ff;
+    --accent-ink: #0b1424;
+}
+
+/* --- Base -------------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: clamp(16px, 3vw, 32px);
+    min-height: 100vh;
+    font-family: var(--font);
+    color: var(--text);
+    background:
+        radial-gradient(900px 500px at 12% -8%, var(--bg-glow), transparent 60%),
+        radial-gradient(700px 460px at 92% 6%, var(--bg-glow), transparent 62%),
+        var(--bg);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Bento grid --------------------------------------------------------
+   Twelve columns on desktop, collapsing to one on narrow screens. Cards
+   claim spans by class so the HTML stays declarative.
+   ---------------------------------------------------------------------- */
+
+#content-wrapper {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--gap);
+    max-width: 1240px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+#main-content,
+#sidebar-content {
+    display: contents;
+}
+
+/* --- Card -------------------------------------------------------------- */
+
+.card,
+#weather,
+#music-genre,
+#recommended-tracks,
+#location,
+#artists {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: clamp(18px, 2.2vw, 26px);
+    overflow: hidden;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+/* A hairline of accent along the top edge, so cards read as a set. */
+.card::before,
+#weather::before,
+#music-genre::before,
+#recommended-tracks::before,
+#location::before,
+#artists::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+}
+
+#weather:hover,
+#music-genre:hover,
+#recommended-tracks:hover,
+#artists:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+/* --- Grid placement ---------------------------------------------------- */
+
+#weather            { grid-column: span 8; }
+#location           { grid-column: span 4; }
+#music-genre        { grid-column: span 4; }
+#recommended-tracks { grid-column: span 8; }
+#artists            { grid-column: span 12; }
+
+/* --- Card labels ------------------------------------------------------- */
+
+.card-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0 0 10px;
+}
+
+/* --- Weather ----------------------------------------------------------- */
+
+#weather .headline {
+    font-size: clamp(2rem, 4.6vw, 3.4rem);
+    font-weight: 650;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+#weather .temp {
+    display: block;
+    margin-top: 6px;
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    font-weight: 500;
+    color: var(--accent);
+}
+
+/* --- Location ---------------------------------------------------------- */
+
+#location .city {
+    font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+    font-weight: 620;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+#location .meta {
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+    color: var(--text-dim);
+}
+
+/* --- Genre ------------------------------------------------------------- */
+
+#music-genre .genre {
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--accent);
+}
+
+/* --- Lists of tracks and artists --------------------------------------- */
+
+.rec-list {
+    list-style: none;
+    counter-reset: rec;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+#artists .rec-list {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.rec-list li {
+    counter-increment: rec;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--surface-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.rec-list li:hover {
+    background: color-mix(in srgb, var(--surface-2) 80%, var(--accent) 20%);
+    border-color: var(--border);
+}
+
+.rec-list li::before {
+    content: counter(rec);
+    flex: 0 0 auto;
+    min-width: 1.5em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    opacity: 0.75;
+}
+
+.rec-title {
+    font-weight: 560;
+    line-height: 1.35;
+}
+
+.rec-artist {
+    margin-left: auto;
+    padding-left: 12px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 45%;
+}
+
+/* --- Buttons ----------------------------------------------------------- */
+
+.forecast-button,
+.historical-button,
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 560;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease),
+                color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.forecast-button:hover,
+.historical-button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    transform: translateY(-1px);
+}
+
+/* Navigation sits in the grid rather than floating. A fixed-position control
+   in a corner will always cover whatever card happens to be under it. */
+.nav-button { grid-column: span 6; }
+.nav-button.third { grid-column: span 4; }
+
+.back-button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    transform: translateY(-1px);
+}
+
+/* --- Loading and error states ------------------------------------------ */
+
+.is-loading {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* A slow pulse while the model is still answering. */
+.is-loading::after {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    vertical-align: middle;
+    animation: pulse 1.4s var(--ease) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.25; transform: scale(0.85); }
+    50%      { opacity: 1;    transform: scale(1.15); }
+}
+
+.error {
+    margin: 0;
+    color: #ff9a8b;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* --- Forecast page: a row of day cards --------------------------------- */
+
+#forecast-grid {
+    grid-column: span 12;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--gap);
+}
+
+.weather-day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.weather-day:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.weather-day-date {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0;
+}
+
+.weather-day-description {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 2px 0 8px;
+}
+
+.weather-day-temps {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    margin: 0;
+}
+
+.weather-day-temps .max { color: var(--accent); font-weight: 600; }
+
+.day-pick {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    gap: 8px;
+}
+
+.day-pick-row .k {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.day-pick-row .v {
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.day-pick-row .v .artist { color: var(--text-dim); }
+
+/* --- Responsive -------------------------------------------------------- */
+
+@media (max-width: 900px) {
+    #weather,
+    #location,
+    #music-genre,
+    #recommended-tracks,
+    #artists,
+    #forecast-grid { grid-column: span 12; }
+}
+
+@media (max-width: 560px) {
+    .nav-button,
+    .nav-button.third { grid-column: span 12; }
+
+    .rec-list li { flex-wrap: wrap; gap: 4px 12px; }
+
+    /* Always break the artist onto its own line, so short and long titles
+       don't produce a ragged mix of wrapped and inline rows. */
+    .rec-artist {
+        flex-basis: 100%;
+        margin-left: 0;
+        padding-left: calc(1.5em + 12px);
+        max-width: 100%;
+        text-align: left;
+        white-space: normal;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

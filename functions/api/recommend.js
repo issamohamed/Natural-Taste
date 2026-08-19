@@ -3,29 +3,21 @@
 // Proxies Groq so GROQ_API_KEY stays on the server. The prompts live here rather
 // than in the pages, so the browser sends a request kind plus the weather or
 // genre it applies to — never a key, never a raw prompt.
+//
+// List kinds ask the model for JSON and hand back an `items` array. Returning a
+// blob of text meant the pages had to guess where one song ended and the next
+// began, and a newline-separated list dropped into <ol> renders as one run-on
+// line, since HTML collapses the newlines.
 
 // Groq decommissioned the llama-3.x models these pages were written against.
 // Every chat model it still serves is a reasoning model: it spends tokens
 // thinking before it answers, and those tokens come out of the same completion
-// budget. Low reasoning effort plus a generous budget leaves room for both, so
-// answers are not truncated mid-sentence.
+// budget. Low reasoning effort plus a budget sized per kind leaves room for
+// both. Groq also counts the requested budget against the per-minute token
+// limit, and the forecast page makes fifteen calls in a row, so asking for only
+// what each answer needs is what keeps that page off the rate limiter.
 const GROQ_MODEL = "openai/gpt-oss-120b";
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-
-// Groq counts the *requested* budget against the tokens-per-minute limit, not
-// just what the answer uses. The forecast page makes fifteen calls in a row
-// (five days x genre/track/artist), so an oversized budget on each one burns
-// through the quota and starts returning 429s. Each kind gets what its answer
-// actually needs, plus room for the reasoning pass.
-const TOKEN_BUDGETS = {
-  genre: 1024,
-  tracks: 1024,
-  artists: 1024,
-  forecast_genre: 512,
-  forecast_track: 512,
-  forecast_artist: 512,
-};
-const DEFAULT_BUDGET = 1024;
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -34,28 +26,66 @@ const json = (body, status = 200) =>
   });
 
 const clean = (s) => String(s ?? "").trim().slice(0, 300);
+const str = (v) => (typeof v === "string" ? v.trim() : "");
 
-const PROMPTS = {
-  // Current conditions and yesterday's conditions: a detailed genre, then five
-  // songs and five artists.
-  genre: ({ weather }) =>
-    `Generate a detailed genre of music you believe best fits with this weather. Don't make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd recommend by inserting the genre name. (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specific and detailed genres. ${clean(weather)}`,
+const NO_INVENTING = "Never invent a song, album, or artist that does not exist; only name real, released music.";
 
-  tracks: ({ genre }) =>
-    `Generate 5 songs that best align with the genre: ${clean(genre)}. Merely state the songs you'd recommend in this format: A ranked top to bottom list of songs (don't write anything else aside the list) (do not use '*' and do not provide explanations for the songs selected). Once the song title is displayed in "" say "by (artist's name insert). Never ever make up a song that doesn't exist.`,
+const KINDS = {
+  genre: {
+    budget: 1024,
+    prompt: ({ weather }) =>
+      `Generate a detailed genre of music you believe best fits with this weather. Don't make any assumptions or references to the location in which you are picking music for. Merely state the Music Genre you'd recommend by inserting the genre name. (do not use '*' and do not provide explanations for the genre selected). For musical diversity, generate very specific and detailed genres. ${clean(weather)}`,
+    shape: (text) => ({ text }),
+  },
 
-  artists: ({ genre }) =>
-    `Generate a number list of 5 musical artists that best align with this genre: ${clean(genre)}. Merely state the artists you'd recommend in this format: A ranked top to bottom list of artists (don't write anything else aside the list) (do not use '*' and do not provide explanations for the artists selected. For diversity purposes do not list any artists listed in the tracks generated). Never ever list a musical artist who doesn't exist.`,
+  tracks: {
+    budget: 1024,
+    json: true,
+    prompt: ({ genre }) =>
+      `Generate 5 songs that best align with the genre: ${clean(genre)}, ranked best first. ${NO_INVENTING} Return strict JSON only, no markdown. Schema: {"tracks":[{"title":string,"artist":string}]}`,
+    shape: (parsed) => ({
+      items: (parsed?.tracks ?? [])
+        .map((t) => ({ title: str(t?.title), artist: str(t?.artist) }))
+        .filter((t) => t.title),
+    }),
+  },
 
-  // The 5-day forecast asks per day, so it wants one short answer each time.
-  forecast_genre: ({ weather }) =>
-    `Generate a detailed genre of music that best fits this weather. Make sure to only state the Music Genre in your response, nothing else. ${clean(weather)}`,
+  artists: {
+    budget: 1024,
+    json: true,
+    prompt: ({ genre }) =>
+      `Generate 5 musical artists that best align with the genre: ${clean(genre)}, ranked best first. Do not repeat artists already suggested for this genre's tracks where you can avoid it. ${NO_INVENTING} Return strict JSON only, no markdown. Schema: {"artists":[{"name":string}]}`,
+    shape: (parsed) => ({
+      items: (parsed?.artists ?? [])
+        .map((a) => ({ name: str(a?.name) }))
+        .filter((a) => a.name),
+    }),
+  },
 
-  forecast_track: ({ genre }) =>
-    `Generate 1 song that best aligns with the genre: ${clean(genre)}. Merely state the song's title. There can be nothing else written but the song's title and then state "by" and insert the artist's name. Never ever make up a song that doesn't exist`,
+  // The 5-day forecast asks per day, so each call wants one short answer.
+  forecast_genre: {
+    budget: 512,
+    prompt: ({ weather }) =>
+      `Generate a detailed genre of music that best fits this weather. Make sure to only state the Music Genre in your response, nothing else. ${clean(weather)}`,
+    shape: (text) => ({ text }),
+  },
 
-  forecast_artist: ({ genre }) =>
-    `Generate 1 musical artist that closely aligns with the genre: ${clean(genre)}. Merely state the artist's name. Never ever make up a musical artist who doesn't exist`,
+  forecast_track: {
+    budget: 512,
+    json: true,
+    prompt: ({ genre }) =>
+      `Generate 1 song that best aligns with the genre: ${clean(genre)}. ${NO_INVENTING} Return strict JSON only, no markdown. Schema: {"title":string,"artist":string}`,
+    shape: (parsed) => ({
+      item: { title: str(parsed?.title), artist: str(parsed?.artist) },
+    }),
+  },
+
+  forecast_artist: {
+    budget: 512,
+    prompt: ({ genre }) =>
+      `Generate 1 musical artist that closely aligns with the genre: ${clean(genre)}. Merely state the artist's name. ${NO_INVENTING}`,
+    shape: (text) => ({ text }),
+  },
 };
 
 export async function onRequestPost({ request, env }) {
@@ -66,9 +96,9 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const build = PROMPTS[body?.kind];
-  if (!build) {
-    return json({ error: `kind must be one of: ${Object.keys(PROMPTS).join(", ")}` }, 400);
+  const spec = KINDS[body?.kind];
+  if (!spec) {
+    return json({ error: `kind must be one of: ${Object.keys(KINDS).join(", ")}` }, 400);
   }
 
   if (!env.GROQ_API_KEY) {
@@ -76,7 +106,16 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Recommendation service is not configured" }, 500);
   }
 
-  const maxCompletionTokens = TOKEN_BUDGETS[body.kind] ?? DEFAULT_BUDGET;
+  const payload = {
+    model: GROQ_MODEL,
+    messages: [{ role: "user", content: spec.prompt(body) }],
+    max_completion_tokens: spec.budget,
+    reasoning_effort: "low",
+    temperature: 1,
+    top_p: 1,
+    stream: false,
+  };
+  if (spec.json) payload.response_format = { type: "json_object" };
 
   const callGroq = () =>
     fetch(GROQ_ENDPOINT, {
@@ -85,15 +124,7 @@ export async function onRequestPost({ request, env }) {
         "Authorization": `Bearer ${env.GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [{ role: "user", content: build(body) }],
-        max_completion_tokens: maxCompletionTokens,
-        reasoning_effort: "low",
-        temperature: 1,
-        top_p: 1,
-        stream: false,
-      }),
+      body: JSON.stringify(payload),
     });
 
   let res;
@@ -101,8 +132,8 @@ export async function onRequestPost({ request, env }) {
     res = await callGroq();
 
     // The forecast page's fifteen back-to-back calls can trip the per-minute
-    // token limit. Groq says how long to wait, so wait that long and try once
-    // more rather than failing the day outright.
+    // token limit. Groq says how long to wait, so wait and try once more rather
+    // than failing the day outright.
     if (res.status === 429) {
       const retryAfter = Number(res.headers.get("retry-after"));
       const waitMs = Math.min(Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 6000, 10000);
@@ -134,15 +165,31 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (choice?.finish_reason === "length") {
-    console.error(`[recommend:${body.kind}] truncated at ${maxCompletionTokens} tokens`);
+    console.error(`[recommend:${body.kind}] truncated at ${spec.budget} tokens`);
     return json({ error: "The recommendation was cut off. Please try again." }, 502);
   }
 
-  const text = choice?.message?.content?.trim();
-  if (!text) {
+  const content = choice?.message?.content?.trim();
+  if (!content) {
     console.error(`[recommend:${body.kind}] empty content from Groq`);
     return json({ error: "No recommendation came back. Please try again." }, 502);
   }
 
-  return json({ text });
+  if (!spec.json) return json(spec.shape(content));
+
+  let parsed;
+  try {
+    parsed = JSON.parse(content);
+  } catch (err) {
+    console.error(`[recommend:${body.kind}] content was not valid JSON:`, err, content.slice(0, 300));
+    return json({ error: "The recommendation service returned an unreadable response" }, 502);
+  }
+
+  const shaped = spec.shape(parsed);
+  if (shaped.items && shaped.items.length === 0) {
+    console.error(`[recommend:${body.kind}] no usable items in:`, content.slice(0, 300));
+    return json({ error: "No recommendation came back. Please try again." }, 502);
+  }
+
+  return json(shaped);
 }

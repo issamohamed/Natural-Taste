@@ -3,54 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historical Weather App</title>
-    <link rel="stylesheet" href="histo.css">
-    <style>
-        #sidebar-content {
-            position: fixed;
-            top: 0;
-            right: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-            width: 200px; /* Adjust width as needed */
-        }
-
-        #content-wrapper {
-            margin-right: 220px; /* Make space for the sidebar */
-            padding: 20px;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
+    <title>Natural Taste — Yesterday</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body class="theme-past">
     <div id="content-wrapper">
         <div id="main-content">
             <div id="weather">
-                <p>Loading weather data...</p>
+                <span class="card-label">Yesterday</span>
+                <p class="is-loading">Loading weather</p>
             </div>
 
             <div id="music-genre">
-                <p>Loading music genre...</p>
+                <span class="card-label">Matched genre</span>
+                <p class="is-loading">Listening back</p>
             </div>
 
             <div id="recommended-tracks">
-                <p>Loading recommended tracks...</p>
+                <span class="card-label">Tracks for yesterday</span>
+                <p class="is-loading">Picking tracks</p>
             </div>
         </div>
 
         <div id="sidebar-content">
             <div id="location">
-                <p>Loading location...</p>
+                <span class="card-label">Location</span>
+                <p class="is-loading">Locating</p>
             </div>
-            <a id="backButton" href="#" class="back-button">Back to Current Weather</a>
+            <div class="nav-button">
+                <a href="javascript:void(0);" id="backButton" class="forecast-button">← Back to now</a>
+            </div>
+            <div class="nav-button">
+                <a href="intel.html" class="back-button">← Change city</a>
+            </div>
         </div>
-    </div>
 
-    <div id="artists">
-        <p>Loading recommended artists...</p>
+        <div id="artists">
+            <span class="card-label">Artists to explore</span>
+            <p class="is-loading">Finding artists</p>
+        </div>
     </div>
 
     <script>
@@ -59,52 +53,86 @@
         // server and are never sent to the browser.
 
         async function getHistoricalWeather() {
-            const url = window.location.href;
-            const locationKey = url.split('city=')[1].split('&')[0];
-            const city_text = decodeURIComponent(url.split('city_text=')[1].split('&')[0]);
+            const params = new URLSearchParams(window.location.search);
+            const locationKey = params.get('city');
+            const city_text = params.get('city_text');
+
+            if (!locationKey || !city_text) {
+                displayError('weather', 'Missing location key or city name.');
+                return;
+            }
 
             try {
                 const historicalWeather = await fetchHistoricalWeatherData(locationKey);
 
-                displayLocation(city_text, historicalWeather);
+                displayLocation(historicalWeather, city_text);
 
-                const weatherDocument = `City: ${city_text}, Temperature: ${historicalWeather.temperatureC}°C, Weather: ${historicalWeather.weatherText}`;
-                
-                // Generate music genre
-                const musicGenre = await generateMusicGenre(weatherDocument);
-                document.getElementById('music-genre').innerHTML = `<p>Music Genre: ${musicGenre}</p>`;
+                const weatherDocument = `City: ${historicalWeather.city}, Temperature: ${historicalWeather.temperatureC}°C, Weather: ${historicalWeather.weatherText}`;
 
-                // Generate recommended tracks
-                const recommendedTracks = await generateRecommendedTracks(musicGenre);
-                document.getElementById('recommended-tracks').innerHTML = `<p>Recommended Tracks:</p><ol>${recommendedTracks}</ol>`;
+                const musicGenre = await recommendText({ kind: 'genre', weather: weatherDocument });
+                setCard('music-genre', 'Matched genre', `<p class="genre">${escapeHtml(musicGenre)}</p>`);
 
-                // Generate recommended artists
-                const artists = await generateArtists(musicGenre);
-                document.getElementById('artists').innerHTML = `<p>Recommended Artists:</p><ol>${artists}</ol>`;
+                const tracks = await recommendItems({ kind: 'tracks', genre: musicGenre });
+                setCard('recommended-tracks', 'Tracks for yesterday', trackList(tracks));
 
-                // Update back button URL
-                const backButton = document.getElementById('backButton');
-                backButton.href = `n_t.html?city=${encodeURIComponent(locationKey)}&city_text=${encodeURIComponent(city_text)}`;
+                const artists = await recommendItems({ kind: 'artists', genre: musicGenre });
+                setCard('artists', 'Artists to explore', artistList(artists));
+
+                document.getElementById('backButton').href = `n_t.html?city=${encodeURIComponent(locationKey)}&city_text=${encodeURIComponent(city_text)}`;
 
             } catch (error) {
                 displayError('weather', `Error fetching data: ${error.message}`);
             }
         }
 
-        function displayLocation(city_text, weather) {
-            city_text = decodeURIComponent(city_text);
-            city_text = city_text.split(',')[0];
-            const locationInfo = `
-                <p>City: ${city_text}</p>
-                <p>Temperature: ${weather.temperatureC}°C</p>
-            `;
-            document.getElementById('location').innerHTML = locationInfo;
-            document.getElementById('weather').innerHTML = `<p>Weather: ${weather.weatherText}</p>`;
+        // --- Rendering -----------------------------------------------------
+
+        function setCard(id, label, html) {
+            document.getElementById(id).innerHTML =
+                `<span class="card-label">${escapeHtml(label)}</span>${html}`;
+        }
+
+        function trackList(items) {
+            return '<ol class="rec-list">' + items.map(function (t) {
+                const artist = t.artist ? `<span class="rec-artist">${escapeHtml(t.artist)}</span>` : '';
+                return `<li><span class="rec-title">${escapeHtml(t.title)}</span>${artist}</li>`;
+            }).join('') + '</ol>';
+        }
+
+        function artistList(items) {
+            return '<ol class="rec-list">' + items.map(function (a) {
+                return `<li><span class="rec-title">${escapeHtml(a.name)}</span></li>`;
+            }).join('') + '</ol>';
+        }
+
+        function displayLocation(weather, city_text) {
+            const label = decodeURIComponent(city_text);
+            const city = label.split(',')[0];
+            const rest = label.split(',').slice(1).join(',').trim();
+
+            setCard('location', 'Location',
+                `<p class="city">${escapeHtml(city)}</p>` +
+                (rest ? `<p class="meta">${escapeHtml(rest)}</p>` : ''));
+
+            const dated = weather.date ? `<span class="temp">${escapeHtml(weather.temperatureC)}°C · ${escapeHtml(weather.date)}</span>`
+                                       : `<span class="temp">${escapeHtml(weather.temperatureC)}°C</span>`;
+            setCard('weather', 'Yesterday',
+                `<p class="headline">${escapeHtml(weather.weatherText)}${dated}</p>`);
         }
 
         function displayError(elementId, message) {
-            document.getElementById(elementId).innerHTML = `<p class="error">${message}</p>`;
+            document.getElementById(elementId).innerHTML = `<p class="error">${escapeHtml(message)}</p>`;
         }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // --- API -----------------------------------------------------------
 
         async function fetchHistoricalWeatherData(locationKey) {
             const weatherResponse = await fetch(`/api/weather?kind=historical&key=${encodeURIComponent(locationKey)}`);
@@ -115,39 +143,30 @@
             return weatherData;
         }
 
-        async function generateMusicGenre(weatherDocument) {
-            return await recommend({ kind: 'genre', weather: weatherDocument });
-        }
-
-        async function generateRecommendedTracks(musicGenre) {
-            return await recommend({ kind: 'tracks', genre: musicGenre });
-        }
-
-        async function generateArtists(musicGenre) {
-            return await recommend({ kind: 'artists', genre: musicGenre });
-        }
-
         async function recommend(payload) {
-            try {
-                const response = await fetch('/api/recommend', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            const response = await fetch('/api/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-                const data = await response.json().catch(() => null);
-                if (!response.ok) throw new Error(data?.error || `Recommendation error: ${response.status}`);
-                if (!data || !data.text) throw new Error('Invalid response structure');
+            const data = await response.json().catch(() => null);
+            if (!response.ok) throw new Error(data?.error || `Recommendation error: ${response.status}`);
+            if (!data) throw new Error('Invalid response structure');
 
-                return formatTextData(data.text);
-            } catch (error) {
-                console.error("Error in fetch request: " + error.message);
-                return "Could not generate the summary.";
-            }
+            return data;
         }
 
-        function formatTextData(text) {
-            return text.trim().replace(/^\s+|\s+$/g, '');
+        async function recommendText(payload) {
+            const data = await recommend(payload);
+            if (!data.text) throw new Error('Invalid response structure');
+            return data.text.trim();
+        }
+
+        async function recommendItems(payload) {
+            const data = await recommend(payload);
+            if (!Array.isArray(data.items) || !data.items.length) throw new Error('Invalid response structure');
+            return data.items;
         }
 
         window.onload = getHistoricalWeather;

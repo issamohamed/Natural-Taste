@@ -3,36 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5-Day Weather Forecast</title>
-    <link rel="stylesheet" href="forecasting.css">
+    <title>Natural Taste — Next 5 Days</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
-    <div id="main-content">
-        <div id="weather-container">
-            <div id="weather">
-            </div>
-        </div>
-        <div id="genre-container">
-            <div id="music-genre">
-                Loading music genres...
-            </div>
-        </div>
-        <div id="tracks-container">
-            <div id="recommended-tracks">
-                Loading recommended tracks...
-            </div>
-        </div>
-        <div id="artists-container">
-            <div id="artists">
-                Loading recommended artists...
-            </div>
-        </div>
-    </div>
-    <div id="sidebar-content">
+<body class="theme-ahead">
+    <div id="content-wrapper">
         <div id="location">
-            Loading location...
+            <span class="card-label">Location</span>
+            <p class="is-loading">Locating</p>
         </div>
-        <a href="javascript:void(0);" id="back-button" class="back-button">Back</a>
+        <div class="nav-button third">
+            <a href="javascript:void(0);" id="back-button" class="forecast-button">← Back to now</a>
+        </div>
+        <div class="nav-button third">
+            <a href="intel.html" class="back-button">← Change city</a>
+        </div>
+
+        <div id="forecast-grid"></div>
+        <div id="status"></div>
     </div>
 
     <script>
@@ -41,85 +32,97 @@
         // server and are never sent to the browser.
 
         async function getWeather() {
-            const url = window.location.href;
-            const locationKey = url.split('city=')[1].split('&')[0];
-            const city_text = decodeURIComponent(url.split('city_text=')[1].split('&')[0]);
+            const params = new URLSearchParams(window.location.search);
+            const locationKey = params.get('city');
+            const city_text = params.get('city_text');
+
+            if (!locationKey || !city_text) {
+                displayError('Missing location key or city name.');
+                return;
+            }
 
             try {
                 const weather = await fetchWeatherData(locationKey);
 
-                // Clear the loading text
-                clearLoadingText();
-
-                displayLocation(locationKey, weather, city_text);
-
-                for (const dailyForecast of weather.days) {
-                    const weatherInfo = `
-                        <div class="weather-day">
-                            <p class="weather-day-date">${new Date(dailyForecast.date + 'T00:00:00').toDateString()}</p>
-                            <p class="weather-day-description">${dailyForecast.weatherText}</p>
-                            <p>Min Temp: ${dailyForecast.minC}°C</p>
-                            <p>Max Temp: ${dailyForecast.maxC}°C</p>
-                        </div>
-                    `;
-                    document.getElementById('weather').innerHTML += weatherInfo;
-
-                    const weatherDocument = `Min Temp: ${dailyForecast.minC}, Max Temp: ${dailyForecast.maxC}, Weather: ${dailyForecast.weatherText}`;
-                    const musicGenre = await generateMusicGenre(weatherDocument);
-                    document.getElementById('music-genre').innerHTML += `
-                        <div class="genre-day">
-                            <p class="genre-header">Music Genre:</p>
-                            <p class="genre-description">${musicGenre}</p>
-                        </div>
-                    `;
-
-                    const recommendedTracks = await generateRecommendedTracks(musicGenre);
-                    document.getElementById('recommended-tracks').innerHTML += `
-                        <div class="tracks-day">
-                            <p class="tracks-header">Recommended Track:</p>
-                            <p class="tracks-description">${recommendedTracks}</p>
-                        </div>
-                    `;
-
-                    const artists = await generateArtists(musicGenre);
-                    document.getElementById('artists').innerHTML += `
-                        <div class="artist-day">
-                            <p class="artist-header">Recommended Artist:</p>
-                            <p class="artist-description">${artists}</p>
-                        </div>
-                    `;
-                }
-
-                // Set up the back button
+                displayLocation(weather, city_text);
                 document.getElementById('back-button').href = `n_t.html?city=${encodeURIComponent(locationKey)}&city_text=${encodeURIComponent(city_text)}`;
 
+                // Lay every day out first so the grid doesn't reflow as each
+                // day's picks arrive, then fill the picks in one day at a time.
+                const grid = document.getElementById('forecast-grid');
+                grid.innerHTML = weather.days.map(function (d, i) {
+                    return `
+                        <div class="weather-day" id="day-${i}">
+                            <p class="weather-day-date">${escapeHtml(formatDate(d.date))}</p>
+                            <p class="weather-day-description">${escapeHtml(d.weatherText)}</p>
+                            <p class="weather-day-temps">${escapeHtml(d.minC)}°C — <span class="max">${escapeHtml(d.maxC)}°C</span></p>
+                            <div class="day-pick"><p class="is-loading">Picking music</p></div>
+                        </div>`;
+                }).join('');
+
+                for (let i = 0; i < weather.days.length; i++) {
+                    const d = weather.days[i];
+                    const pick = document.querySelector(`#day-${i} .day-pick`);
+
+                    try {
+                        const weatherDocument = `Min Temp: ${d.minC}, Max Temp: ${d.maxC}, Weather: ${d.weatherText}`;
+                        const genre = await recommendText({ kind: 'forecast_genre', weather: weatherDocument });
+                        const track = await recommendItem({ kind: 'forecast_track', genre: genre });
+                        const artist = await recommendText({ kind: 'forecast_artist', genre: genre });
+
+                        pick.innerHTML =
+                            row('Genre', escapeHtml(genre)) +
+                            row('Track', escapeHtml(track.title) +
+                                (track.artist ? ` <span class="artist">· ${escapeHtml(track.artist)}</span>` : '')) +
+                            row('Artist', escapeHtml(artist));
+                    } catch (err) {
+                        pick.innerHTML = `<p class="error">${escapeHtml(err.message)}</p>`;
+                    }
+                }
+
             } catch (error) {
-                displayError('weather', `Error fetching data: ${error.message}`);
+                displayError(`Error fetching data: ${error.message}`);
             }
         }
 
-        function clearLoadingText() {
-            // Clear loading placeholders
-            document.getElementById('weather').innerHTML = "";
-            document.getElementById('music-genre').innerHTML = "";
-            document.getElementById('recommended-tracks').innerHTML = "";
-            document.getElementById('location').innerHTML = "";
-            document.getElementById('artists').innerHTML = "";
+        // --- Rendering -----------------------------------------------------
+
+        function row(key, valueHtml) {
+            return `<div class="day-pick-row"><span class="k">${escapeHtml(key)}</span><span class="v">${valueHtml}</span></div>`;
         }
 
-        function displayLocation(locationKey, weather, city_text) {
-            city_text = decodeURIComponent(city_text);
-            city_text = city_text.split(',')[0];
-            const locationInfo = `
-                <p>City: ${city_text}</p>
-                <p>Temperature: ${weather.days[0].minC}°C</p>
-            `;
-            document.getElementById('location').innerHTML = locationInfo;
+        // Dates arrive as YYYY-MM-DD. Parsing that bare string is treated as
+        // UTC, which can land on the previous day in western timezones, so pin
+        // it to local midnight.
+        function formatDate(iso) {
+            const d = new Date(iso + 'T00:00:00');
+            return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
         }
 
-        function displayError(elementId, message) {
-            document.getElementById(elementId).innerHTML = `<p class="error">${message}</p>`;
+        function displayLocation(weather, city_text) {
+            const label = decodeURIComponent(city_text);
+            const city = label.split(',')[0];
+            const rest = label.split(',').slice(1).join(',').trim();
+
+            document.getElementById('location').innerHTML =
+                `<span class="card-label">Location</span>` +
+                `<p class="city">${escapeHtml(city)}</p>` +
+                (rest ? `<p class="meta">${escapeHtml(rest)}</p>` : '');
         }
+
+        function displayError(message) {
+            document.getElementById('status').innerHTML = `<p class="error">${escapeHtml(message)}</p>`;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // --- API -----------------------------------------------------------
 
         async function fetchWeatherData(locationKey) {
             const weatherResponse = await fetch(`/api/weather?kind=forecast&key=${encodeURIComponent(locationKey)}`);
@@ -127,18 +130,6 @@
             if (!weatherResponse.ok) throw new Error(weatherData?.error || `Weather API error: ${weatherResponse.status}`);
             if (!weatherData || !weatherData.days) throw new Error('Invalid weather data');
             return weatherData;
-        }
-
-        async function generateMusicGenre(weatherDocument) {
-            return await recommend({ kind: 'forecast_genre', weather: weatherDocument });
-        }
-
-        async function generateRecommendedTracks(musicGenre) {
-            return await recommend({ kind: 'forecast_track', genre: musicGenre });
-        }
-
-        async function generateArtists(musicGenre) {
-            return await recommend({ kind: 'forecast_artist', genre: musicGenre });
         }
 
         async function recommend(payload) {
@@ -150,9 +141,21 @@
 
             const data = await response.json().catch(() => null);
             if (!response.ok) throw new Error(data?.error || `Recommendation error: ${response.status}`);
-            if (!data || !data.text) throw new Error('Invalid response structure');
+            if (!data) throw new Error('Invalid response structure');
 
+            return data;
+        }
+
+        async function recommendText(payload) {
+            const data = await recommend(payload);
+            if (!data.text) throw new Error('Invalid response structure');
             return data.text.trim();
+        }
+
+        async function recommendItem(payload) {
+            const data = await recommend(payload);
+            if (!data.item || !data.item.title) throw new Error('Invalid response structure');
+            return data.item;
         }
 
         window.onload = getWeather;
