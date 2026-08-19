@@ -2,7 +2,7 @@
 
 A weather-inspired music discovery platform that creates personalized playlists based on your local weather conditions.
 
-URL link: jocular-fox-018062.netlify.app <br />
+<br />
 
 ![Natural Taste Banner](https://github.com/user-attachments/assets/a48ce029-6d6c-40d5-b30b-f544fd1f43de)
 <img width="1439" alt="Screenshot 2024-09-12 at 9 08 00 PM" src="https://github.com/user-attachments/assets/26dc72eb-73cd-455d-8a90-4f7a3a3e0559" />
